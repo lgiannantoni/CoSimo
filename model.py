@@ -16,14 +16,13 @@ class IModel(ABC):
     -------
     """
 
-    @abstractmethod
     def __init__(self):
         pass
 
     @abstractmethod
     def step(self, *args, **kwargs):
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def draw(self, name=None, path="."):
-        pass
+        raise NotImplementedError
