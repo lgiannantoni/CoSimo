@@ -1,4 +1,7 @@
 from abc import ABC, abstractmethod
+from collections import defaultdict
+
+from library.common.model import IModel
 
 
 class ISimulator(ABC):
@@ -15,7 +18,7 @@ class ISimulator(ABC):
     """
 
     def __init__(self):
-        self.models = []
+        self.models = defaultdict(IModel)
 
     @abstractmethod
     def add_model(self, *args, **kwargs):
@@ -25,8 +28,9 @@ class ISimulator(ABC):
     def step(self):
         raise NotImplementedError
 
-    def data(self) -> list:
-        return [m.data for m in self.models]
+    @abstractmethod
+    def data(self):
+        raise NotImplementedError
 
     def draw(self, name=None, path="."):
         pass
