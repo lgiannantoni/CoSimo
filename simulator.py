@@ -18,7 +18,7 @@ class ISimulator(ABC):
     """
 
     def __init__(self):
-        self.models = defaultdict(IModel)
+        self.models = defaultdict()
 
     @abstractmethod
     def add_model(self, *args, **kwargs):
