@@ -2,20 +2,30 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 
 from library.common.model import IModel
-from library.utils import Level
+from library.utils import Level, InputOutput
 
 
 class ISimulator(ABC):
     """
-    The base class of each module
-
+    The base class of each simulator
     ...
-
     Attributes
     ----------
-
+    _in : list
+        list of params required as input
+    _remove : list
+        list of params that will removed from input
+    _add : list
+        list of params that will added from input
+    name : list
+        Simulator's name
     Methods
     -------
+    __add__(other)
+        To build the pipeline dynamically
+    do(*args,**kwargs)
+        Abstract method that will be called by the pipeline
+    ...
     """
     level = Level.NOTSET
 
@@ -37,10 +47,10 @@ class ISimulator(ABC):
 
     def __add__(self, other):
         """To build the pipeline dynamically
-        Create a pipeline by adding two modules
+        Create a pipeline by adding two simulators
         Parameters
         ----------
-        other : Module
+        other : ISimulator
         """
         if isinstance(other, ISimulator):
             from library.common.pipeline import Pipeline
@@ -54,8 +64,24 @@ class ISimulator(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def step(self):
-        raise NotImplementedError
+    def step(self, *args, **kwargs) -> (tuple, dict):
+        """Abstract method that will be called by the pipeline
+                Parameters
+                ----------
+                args :list
+                    list of params that will used by the simulator
+                kwargs: dict
+                    dict of params that will passed by the simulator
+                """
+        if InputOutput.DEBUG.name in kwargs.keys():
+            self.level = kwargs[InputOutput.DEBUG.name]
+        pass
+
+    def __repr__(self):
+        return self._name
+
+    def __str__(self):
+        return self._name
 
     @abstractmethod
     def data(self):
