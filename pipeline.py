@@ -26,7 +26,7 @@ class Pipeline:
             Sets the level of log
     """
 
-    #debug_path = Path("./_debug_output")
+    # debug_path = Path("./_debug_output")
 
     def __init__(self, *args):
         """
@@ -37,7 +37,7 @@ class Pipeline:
         """
         self._pipe = []
         self._output = set()
-        #self.level = Level.NOTSET
+        # self.level = Level.NOTSET
         for module in args:
             self.__add__(module)
 
@@ -67,7 +67,8 @@ class Pipeline:
                     tmp = module.input_list() - self._output
                     if len(tmp) != 0:
                         raise TypeError(
-                            "The output of module {} is not compatible with the input of module {}".format(l_pipe - 1, l_pipe))
+                            "The output of module {} is not compatible with the input of module {}".format(l_pipe - 1,
+                                                                                                           l_pipe))
                     else:
                         self._pipe.append(module)
 
@@ -78,14 +79,13 @@ class Pipeline:
 
             else:
                 raise TypeError("The pipeline can accept only {} object".format(ISimulator))
-
         return self
 
     def __iadd__(self, other):
         self.__add__(other)
         return self
 
-    def do(self, *args, **kwargs):
+    def step(self, *args, **kwargs):
         """Executes the pipeline
         Parameters
         ----------
@@ -118,7 +118,7 @@ class Pipeline:
                 kwargs = {}
 
             kwargs[InputOutput.DEBUG.name] = self.level
-            args, kwargs = module.do(*args, **kwargs)
+            args, kwargs = module.step(*args, **kwargs)
             logging.debug(f"End in: {(time.time() - start_time):.2f} sec")
 
         logging.debug(f"End pipeline in: {str(datetime.timedelta(seconds=(time.time() - start_pipeline)))}")
