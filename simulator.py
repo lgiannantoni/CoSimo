@@ -64,6 +64,11 @@ class ISimulator(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def remove_model(self, *args, **kwargs):
+        # TODO
+        pass
+
+    @abstractmethod
     def step(self, *args, **kwargs) -> (tuple, dict):
         """Abstract method that will be called by the pipeline
                 Parameters
