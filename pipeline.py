@@ -37,7 +37,7 @@ class Pipeline:
         """
         self._pipe = []
         self._output = set()
-        # self.level = Level.NOTSET
+        self.level = Level.NOTSET
         for module in args:
             self.__add__(module)
 
@@ -85,7 +85,7 @@ class Pipeline:
         self.__add__(other)
         return self
 
-    def step(self, *args, **kwargs):
+    def do(self, *args, **kwargs):
         """Executes the pipeline
         Parameters
         ----------
