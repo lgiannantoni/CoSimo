@@ -109,17 +109,20 @@ class Pipeline:
             else:
                 logging.debug("Debug folder found.")
 
-        for module in self._pipe:
-            logging.debug(f"Start: {str(module)}")
-            start_time = time.time()
-            if args is None:
-                args = ()
-            if kwargs is None:
-                kwargs = {}
+        logging.debug(f"Starting simulation pipeline.")
+        start_time = time.time()
+        for _ in range(int(kwargs[InputOutput.CONFIG.name]["SIM_STEPS"])):
+            for module in self._pipe:
+                #logging.debug(f"Start: {str(module)}")
+                #start_time = time.time()
+                if args is None:
+                    args = ()
+                if kwargs is None:
+                    kwargs = {}
 
-            kwargs[InputOutput.DEBUG.name] = self.level
-            args, kwargs = module.step(*args, **kwargs)
-            logging.debug(f"End in: {(time.time() - start_time):.2f} sec")
+                kwargs[InputOutput.DEBUG.name] = self.level
+                args, kwargs = module.step(*args, **kwargs)
+                logging.debug(f"End in: {(time.time() - start_time):.2f} sec")
 
         logging.debug(f"End pipeline in: {str(datetime.timedelta(seconds=(time.time() - start_pipeline)))}")
 
