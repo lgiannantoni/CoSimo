@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 from collections import defaultdict
 
-from library.common.model import IModel
-from library.utils import Level, InputOutput
+from library.common.utils import Level, InputOutput
 
 
 class ISimulator(ABC):

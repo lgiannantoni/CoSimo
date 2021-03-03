@@ -5,7 +5,7 @@ import time
 from pathlib import Path
 
 from library.common.simulator import ISimulator
-from library.utils import Level, InputOutput
+from library.common.utils import Level, InputOutput
 
 
 class Pipeline:
