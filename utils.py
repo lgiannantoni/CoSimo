@@ -55,6 +55,8 @@ class InputOutput(AdvEnum):
     PATH = 0
     CONFIG = 1
     DIGEST = 2
+    PLACING = 3
+    STIMULI = 4
     GRID_CONFIG = 6
     GRID_EVENTS = 7
     LIFECYCLE_CONFIG = 8
