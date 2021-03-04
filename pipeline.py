@@ -26,7 +26,7 @@ class Pipeline:
             Sets the level of log
     """
 
-    # debug_path = Path("./_debug_output")
+    debug_path = Path("./_debug_output")
 
     def __init__(self, *args):
         """
