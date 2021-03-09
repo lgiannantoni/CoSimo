@@ -4,9 +4,9 @@ from typing import Tuple, List
 import numpy as np
 
 
-def sphere(center: Tuple[int, int, int] = (0, 0, 0), radius: int = 1, fill: bool = True, num=100) -> List[Tuple[int, int, int]]:
-    theta = np.linspace(0, 2 * np.pi, num)
-    phi = np.linspace(0, np.pi, num)
+def sphere(center: Tuple[int, int, int] = (0, 0, 0), radius: int = 1, fill: bool = True, n=100) -> List[Tuple[int, int, int]]:
+    theta = np.linspace(0, 2 * np.pi, n)
+    phi = np.linspace(0, np.pi, n)
     xc, yc, zc = center
     if fill:
         x = [xc + rho * np.outer(np.cos(theta), np.sin(phi)) for rho in range(radius)]
@@ -16,6 +16,19 @@ def sphere(center: Tuple[int, int, int] = (0, 0, 0), radius: int = 1, fill: bool
         x = xc + radius * np.outer(np.cos(theta), np.sin(phi))
         y = yc + radius * np.outer(np.sin(theta), np.sin(phi))
         z = zc + radius * np.outer(np.ones(np.size(theta)), np.cos(phi))
+    x = np.rint(x).astype(int).ravel()
+    y = np.rint(y).astype(int).ravel()
+    z = np.rint(z).astype(int).ravel()
+    return list(set(zip(x, y, z)))
+
+def torus(center: Tuple[int, int, int] = (0, 0, 0), major_radius: int = 3, minor_radius: int = 2, n = 100) -> List[Tuple[int, int, int]]:
+    theta = np.linspace(0, 2 * np.pi, n)
+    phi = np.linspace(0, 2 * np.pi, n)
+    theta, phi = np.meshgrid(theta, phi)
+    xc, yc, zc = center
+    x = xc + (major_radius + minor_radius * np.cos(theta)) * np.cos(phi)
+    y = yc + (major_radius + minor_radius * np.cos(theta)) * np.sin(phi)
+    z = zc + minor_radius * np.sin(theta)
     x = np.rint(x).astype(int).ravel()
     y = np.rint(y).astype(int).ravel()
     z = np.rint(z).astype(int).ravel()
@@ -41,8 +54,11 @@ def main():
     ax = fig.add_subplot(111, projection='3d')
     ax.scatter(X1, Y1, Z1, marker='.', color='b', alpha=0.1)
     ax.scatter(X2, Y2, Z2, marker='.', color='r', alpha=0.1)
-    # ma = np.random.choice([0,1], size=(10,10,5), p=[0.99, 0.01])
-    # ax.voxels(ma, edgecolor="k")
+
+    # torus
+    torus1 = torus(center=(50, 50, 50), major_radius=15, minor_radius=5)
+    X3, Y3, Z3 = unzip(torus1)
+    ax.scatter(X3, Y3, Z3, marker='.', color='g', alpha=0.1)
 
     plt.savefig("geometry.png")
     plt.close()
