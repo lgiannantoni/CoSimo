@@ -26,7 +26,7 @@ class Pipeline:
             Sets the level of log
     """
 
-    debug_path = Path("./_debug_output")
+    debug_path = None
 
     def __init__(self, *args):
         """
@@ -35,6 +35,7 @@ class Pipeline:
          arg : list
             list of Modules
         """
+        Pipeline.debug_path = Path("./_debug_output")
         self._pipe = []
         self._output = set()
         self.level = Level.NOTSET
