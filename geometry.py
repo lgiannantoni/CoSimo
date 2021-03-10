@@ -6,7 +6,6 @@ import numpy as np
 
 def sphere(center: Tuple[int, int, int] = (0, 0, 0), radius: int = 1, fill: bool = True, n=100) -> List[Tuple[int, int, int]]:
     assert radius > 0, "Radius must be a positive integer."
-    assert all(_i > 0 for _i in center), "Center coordinates must be positive integers"
     theta = np.linspace(0, 2 * np.pi, n)
     phi = np.linspace(0, np.pi, n)
     xc, yc, zc = center
@@ -25,7 +24,6 @@ def sphere(center: Tuple[int, int, int] = (0, 0, 0), radius: int = 1, fill: bool
 
 def torus(center: Tuple[int, int, int] = (0, 0, 0), major_radius: int = 3, minor_radius: int = 2, n = 100) -> List[Tuple[int, int, int]]:
     assert major_radius > 0 and minor_radius > 0, "Major radius and minor radius must be positive integers."
-    assert all(_i > 0 for _i in center), "Center coordinates must be positive integers"
     theta = np.linspace(0, 2 * np.pi, n)
     phi = np.linspace(0, 2 * np.pi, n)
     theta, phi = np.meshgrid(theta, phi)
@@ -38,6 +36,18 @@ def torus(center: Tuple[int, int, int] = (0, 0, 0), major_radius: int = 3, minor
     z = np.rint(z).astype(int).ravel()
     return list(set(zip(x, y, z)))
 
+def cuboid(x_width: int, y_depth: int, z_height: int, origin: Tuple[int, int, int] = (0, 0, 0), fill: bool = True) -> List[Tuple[int, int, int]]:
+    assert x_width > 0 and y_depth > 0 and z_height > 0, "Cuboid width, depth and height must be positive integers."
+    xo, yo, zo = origin
+    xvalues = range(xo, xo + x_width)
+    yvalues = range(yo, yo + y_depth)
+    zvalues = range(zo, zo + z_height)
+    x, y, z = np.meshgrid(xvalues, yvalues, zvalues, indexing='ij')
+    x = x.ravel()
+    y = y.ravel()
+    z = z.ravel()
+    return list(set(zip(x, y, z)))
+
 
 def unzip(coord: List[Tuple[int, int, int]]):
     return map(list, zip(*coord))
@@ -47,23 +57,39 @@ def main():
     from mpl_toolkits.mplot3d import Axes3D
     import matplotlib.pyplot as plt
 
+    fig = plt.figure()
+    #plt.gca().set_aspect('equal', adjustable='box')
+    ax1 = fig.add_subplot(121, projection='3d')
+    ax2 = fig.add_subplot(122, projection='3d')
+    ax1.set_xlim(-100, 100)
+    ax1.set_ylim(-100, 100)
+    ax1.set_zlim(-100, 100)
+    ax2.set_xlim(-20, 20)
+    ax2.set_ylim(0, 50)
+    ax2.set_zlim(0, 50)
+
     # sphere 1
     sphere1 = sphere(center=(0, 0, 0), radius=25)
     X1, Y1, Z1 = unzip(sphere1)
+    ax1.scatter(X1, Y1, Z1, marker='.', color='b', alpha=0.1)
+
     # sphere 2
     sphere2 = sphere(center=(10, 30, 20), radius=5)
     X2, Y2, Z2 = unzip(sphere2)
-
-    fig = plt.figure()
-    plt.gca().set_aspect('equal', adjustable='box')
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(X1, Y1, Z1, marker='.', color='b', alpha=0.1)
-    ax.scatter(X2, Y2, Z2, marker='.', color='r', alpha=0.1)
+    ax1.scatter(X2, Y2, Z2, marker='.', color='r', alpha=0.1)
 
     # torus
     torus1 = torus(center=(50, 50, 50), major_radius=15, minor_radius=5)
     X3, Y3, Z3 = unzip(torus1)
-    ax.scatter(X3, Y3, Z3, marker='.', color='g', alpha=0.1)
+    ax1.scatter(X3, Y3, Z3, marker='.', color='g', alpha=0.1)
+
+    # cuboid
+    cuboid1 = cuboid(30, 30, 3, origin=(-15, 10, 0))
+    X4, Y4, Z4, = unzip(cuboid1)
+    ax2.scatter(X4, Y4, Z4, marker='.', color='orange', alpha=0.1)
+    torus2 = torus(center=(0, 30, 20), major_radius=15, minor_radius=5)
+    X5, Y5, Z5 = unzip(torus2)
+    ax2.scatter(X5, Y5, Z5, marker='.', color='grey', alpha=0.1)
 
     plt.savefig("geometry.png")
     plt.close()
