@@ -5,6 +5,9 @@ import numpy as np
 
 from library.common.utils import AdvEnum
 
+# discretization points for theta and phi
+n = 100
+
 
 class Shape(AdvEnum):
     SPHERE = 0
@@ -40,8 +43,14 @@ def sphere(center: Tuple[int, int, int] = (0, 0, 0), radius: int = 1, fill: bool
     return list(set(zip(x, y, z)))
 
 
-def torus(center: Tuple[int, int, int] = (0, 0, 0), major_radius: int = 3, minor_radius: int = 2, n=100) -> List[
-    Tuple[int, int, int]]:
+def torus(**kwargs) -> List[Tuple[int, int, int]]:
+    # center: Tuple[int, int, int] = (0, 0, 0), major_radius: int = 3, minor_radius: int = 2, n=100
+    params = ["center", "major_radius", "minor_radius"]
+    # check if kwargs contains all elements in params
+    assert all(elem in kwargs.keys() for elem in params)
+    center = tuple(kwargs["center"])
+    major_radius = kwargs["major_radius"]
+    minor_radius = kwargs["minor_radius"]
     assert major_radius > 0 and minor_radius > 0, "Major radius and minor radius must be positive integers."
     theta = np.linspace(0, 2 * np.pi, n)
     phi = np.linspace(0, 2 * np.pi, n)
@@ -60,7 +69,6 @@ def torus(center: Tuple[int, int, int] = (0, 0, 0), major_radius: int = 3, minor
 def cuboid(**kwargs) -> List[Tuple[int, int, int]]:
     # x_width: int, y_depth: int, z_height: int, origin: Tuple[int, int, int] = (0, 0, 0), fill: bool = True
     params = ["width", "depth", "height", "origin"]
-    print(kwargs.keys())
     # check if kwargs contains all elements in params
     assert all(elem in kwargs.keys() for elem in params)
     width = kwargs["width"]
