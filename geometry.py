@@ -36,6 +36,7 @@ def torus(center: Tuple[int, int, int] = (0, 0, 0), major_radius: int = 3, minor
     z = np.rint(z).astype(int).ravel()
     return list(set(zip(x, y, z)))
 
+# TODO: fill == False?
 def cuboid(x_width: int, y_depth: int, z_height: int, origin: Tuple[int, int, int] = (0, 0, 0), fill: bool = True) -> List[Tuple[int, int, int]]:
     assert x_width > 0 and y_depth > 0 and z_height > 0, "Cuboid width, depth and height must be positive integers."
     xo, yo, zo = origin
