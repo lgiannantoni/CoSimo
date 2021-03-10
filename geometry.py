@@ -3,8 +3,25 @@ from typing import Tuple, List
 
 import numpy as np
 
+from library.common.utils import AdvEnum
 
-def sphere(center: Tuple[int, int, int] = (0, 0, 0), radius: int = 1, fill: bool = True, n=100) -> List[Tuple[int, int, int]]:
+
+class Shape(AdvEnum):
+    SPHERE = 0
+    TORUS = 1
+    CUBOID = 2
+
+
+def shape(**kwargs):
+    for sh in kwargs.keys():
+        if not sh in Shape.names():
+            raise Exception(f"Shape {sh} unknown. Available shapes: {Shape.names()}")
+        kwargs[sh] = {k.lower(): v for k, v in kwargs[sh].items()}
+        return eval(sh.lower() + '(**kwargs[sh])')
+
+
+def sphere(center: Tuple[int, int, int] = (0, 0, 0), radius: int = 1, fill: bool = True, n=100) -> List[
+    Tuple[int, int, int]]:
     assert radius > 0, "Radius must be a positive integer."
     theta = np.linspace(0, 2 * np.pi, n)
     phi = np.linspace(0, np.pi, n)
@@ -22,7 +39,9 @@ def sphere(center: Tuple[int, int, int] = (0, 0, 0), radius: int = 1, fill: bool
     z = np.rint(z).astype(int).ravel()
     return list(set(zip(x, y, z)))
 
-def torus(center: Tuple[int, int, int] = (0, 0, 0), major_radius: int = 3, minor_radius: int = 2, n = 100) -> List[Tuple[int, int, int]]:
+
+def torus(center: Tuple[int, int, int] = (0, 0, 0), major_radius: int = 3, minor_radius: int = 2, n=100) -> List[
+    Tuple[int, int, int]]:
     assert major_radius > 0 and minor_radius > 0, "Major radius and minor radius must be positive integers."
     theta = np.linspace(0, 2 * np.pi, n)
     phi = np.linspace(0, 2 * np.pi, n)
@@ -36,13 +55,23 @@ def torus(center: Tuple[int, int, int] = (0, 0, 0), major_radius: int = 3, minor
     z = np.rint(z).astype(int).ravel()
     return list(set(zip(x, y, z)))
 
+
 # TODO: fill == False?
-def cuboid(x_width: int, y_depth: int, z_height: int, origin: Tuple[int, int, int] = (0, 0, 0), fill: bool = True) -> List[Tuple[int, int, int]]:
-    assert x_width > 0 and y_depth > 0 and z_height > 0, "Cuboid width, depth and height must be positive integers."
-    xo, yo, zo = origin
-    xvalues = range(xo, xo + x_width)
-    yvalues = range(yo, yo + y_depth)
-    zvalues = range(zo, zo + z_height)
+def cuboid(**kwargs) -> List[Tuple[int, int, int]]:
+    # x_width: int, y_depth: int, z_height: int, origin: Tuple[int, int, int] = (0, 0, 0), fill: bool = True
+    params = ["width", "depth", "height", "origin"]
+    print(kwargs.keys())
+    # check if kwargs contains all elements in params
+    assert all(elem in kwargs.keys() for elem in params)
+    width = kwargs["width"]
+    depth = kwargs["depth"]
+    height = kwargs["height"]
+    assert width > 0 and depth > 0 and height > 0, "Cuboid width, depth and height must be positive integers."
+    xo, yo, zo = tuple(kwargs["origin"])
+
+    xvalues = range(xo, xo + width)
+    yvalues = range(yo, yo + depth)
+    zvalues = range(zo, zo + height)
     x, y, z = np.meshgrid(xvalues, yvalues, zvalues, indexing='ij')
     x = x.ravel()
     y = y.ravel()
@@ -59,7 +88,7 @@ def main():
     import matplotlib.pyplot as plt
 
     fig = plt.figure()
-    #plt.gca().set_aspect('equal', adjustable='box')
+    # plt.gca().set_aspect('equal', adjustable='box')
     ax1 = fig.add_subplot(121, projection='3d')
     ax2 = fig.add_subplot(122, projection='3d')
     ax1.set_xlim(-100, 100)
