@@ -51,6 +51,7 @@ def main():
     X2, Y2, Z2 = unzip(sphere2)
 
     fig = plt.figure()
+    plt.gca().set_aspect('equal', adjustable='box')
     ax = fig.add_subplot(111, projection='3d')
     ax.scatter(X1, Y1, Z1, marker='.', color='b', alpha=0.1)
     ax.scatter(X2, Y2, Z2, marker='.', color='r', alpha=0.1)
