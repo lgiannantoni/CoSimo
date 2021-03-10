@@ -5,6 +5,8 @@ import numpy as np
 
 
 def sphere(center: Tuple[int, int, int] = (0, 0, 0), radius: int = 1, fill: bool = True, n=100) -> List[Tuple[int, int, int]]:
+    assert radius > 0, "Radius must be a positive integer."
+    assert all(_i > 0 for _i in center), "Center coordinates must be positive integers"
     theta = np.linspace(0, 2 * np.pi, n)
     phi = np.linspace(0, np.pi, n)
     xc, yc, zc = center
@@ -22,6 +24,8 @@ def sphere(center: Tuple[int, int, int] = (0, 0, 0), radius: int = 1, fill: bool
     return list(set(zip(x, y, z)))
 
 def torus(center: Tuple[int, int, int] = (0, 0, 0), major_radius: int = 3, minor_radius: int = 2, n = 100) -> List[Tuple[int, int, int]]:
+    assert major_radius > 0 and minor_radius > 0, "Major radius and minor radius must be positive integers."
+    assert all(_i > 0 for _i in center), "Center coordinates must be positive integers"
     theta = np.linspace(0, 2 * np.pi, n)
     phi = np.linspace(0, 2 * np.pi, n)
     theta, phi = np.meshgrid(theta, phi)
