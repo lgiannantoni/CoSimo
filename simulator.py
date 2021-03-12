@@ -1,9 +1,12 @@
 from abc import ABC, abstractmethod
 from collections import defaultdict
 
+import Pyro4
+
 from library.common.utils import Level, InputOutput
 
 
+@Pyro4.expose
 class ISimulator(ABC):
     """
     The base class of each simulator
@@ -29,20 +32,43 @@ class ISimulator(ABC):
     level = Level.NOTSET
 
     def __init__(self, _in: list, _remove: list, _add: list, name: str = ""):
-        self.models = defaultdict()
+        self._models = defaultdict()
         self._input = set(_in)
         self._remove = set(_remove)
         self._add = set(_add)
         self._name = name
 
+    @property
+    def models(self):
+        return self._models
+
+    @models.setter
+    def models(self, value):
+        self._models = value
+
+    @property
     def input_list(self) -> set:
-        return self._input
+        return set(self._input)
 
+    @input_list.setter
+    def input_list(self, value):
+        self._input = set(value)
+
+    @property
     def remove_list(self) -> set:
-        return self._remove
+        return set(self._remove)
 
+    @remove_list.setter
+    def remove_list(self, value):
+        self._remove: set = value
+
+    @property
     def add_list(self) -> set:
-        return self._add
+        return set(self._add)
+
+    @add_list.setter
+    def add_list(self, value):
+        self._add: set = value
 
     def __add__(self, other):
         """To build the pipeline dynamically
@@ -98,3 +124,30 @@ class ISimulator(ABC):
     def draw_model(self, name=None, path=None):
         if len(self.models) > 0:
             self.models[0].draw(name=name, path=path)
+
+
+class Proxy(Pyro4.Proxy):
+    """
+
+    """
+    level = Level.NOTSET
+
+    def __init__(self, uri):
+        super().__init__(uri)
+        # self.models = defaultdict()
+        # self.input_list = set()
+        # self.remove_list = set()
+        # self.add_list = set()
+
+    def __add__(self, other):
+        """To build the pipeline dynamically
+        Create a pipeline by adding two simulators
+        Parameters
+        ----------
+        other : ISimulator or Proxy
+        """
+        if isinstance(other, ISimulator) or isinstance(other, Proxy):
+            from library.common.pipeline import Pipeline
+            return Pipeline(self, other)
+        else:
+            raise TypeError("The second arg is not a {} or {} object".format(ISimulator, Proxy))
