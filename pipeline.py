@@ -4,7 +4,7 @@ import os
 import time
 from pathlib import Path
 
-from library.common.simulator import ISimulator
+from library.common.simulator import ISimulator, Proxy
 from library.common.utils import Level, InputOutput
 
 
@@ -51,7 +51,7 @@ class Pipeline:
             Module to add to the pipeline or a Pipeline to marge
         """
 
-        if isinstance(other, ISimulator):
+        if isinstance(other, ISimulator) or isinstance(other, Proxy):
             other = [other]
         elif isinstance(other, Pipeline):
             other = other._pipe
@@ -60,12 +60,12 @@ class Pipeline:
 
         for module in other:
             l_pipe = len(self._pipe)
-            if isinstance(module, ISimulator):
+            if isinstance(module, ISimulator) or isinstance(module, Proxy):
                 if l_pipe == 0:
                     self._pipe.append(module)
-                    self._output |= module.input_list()
+                    self._output |= set(module.input_list)
                 else:
-                    tmp = module.input_list() - self._output
+                    tmp = module.input_list - self._output
                     if len(tmp) != 0:
                         raise TypeError(
                             "The output of module {} is not compatible with the input of module {}".format(l_pipe - 1,
@@ -73,13 +73,13 @@ class Pipeline:
                     else:
                         self._pipe.append(module)
 
-                for el in module.remove_list():
+                for el in module.remove_list:
                     self._output.remove(el)
 
-                self._output |= module.add_list()
+                self._output |= set(module.add_list)
 
             else:
-                raise TypeError("The pipeline can accept only {} object".format(ISimulator))
+                raise TypeError("The pipeline can accept only {} or {} objects".format(ISimulator, Proxy))
         return self
 
     def __iadd__(self, other):
