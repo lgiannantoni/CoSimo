@@ -123,7 +123,7 @@ class Pipeline:
 
                 kwargs[InputOutput.DEBUG.name] = self.level
                 args, kwargs = module.step(*args, **kwargs)
-                logging.debug(f"End in: {(time.time() - start_time):.2f} sec")
+                #logging.debug(f"End in: {(time.time() - start_time):.2f} sec")
 
         logging.debug(f"End pipeline in: {str(datetime.timedelta(seconds=(time.time() - start_pipeline)))}")
 
