@@ -14,6 +14,7 @@ class Shape(AdvEnum):
     SPHERE = 0
     TORUS = 1
     CUBOID = 2
+    CYLINDER = 3
 
 
 def shape(**kwargs):
@@ -22,6 +23,26 @@ def shape(**kwargs):
             raise Exception(f"Shape {sh} unknown. Available shapes: {Shape.names()}")
         kwargs[sh] = {k.lower(): v for k, v in kwargs[sh].items()}
         return eval(sh.lower() + '(**kwargs[sh])')
+
+
+def cylinder(**kwargs) -> List[Tuple[int, int, int]]:
+    params = ["center", "radius", "height"]
+    # check if kwargs contains all elements in params
+    assert all(elem in kwargs.keys() for elem in params)
+    center = tuple(kwargs["center"])
+    xc, yc, zc = center
+    radius = kwargs["radius"]
+    assert radius > 0, "Radius must be a positive integer."
+    height = kwargs["height"]
+    assert height > 0, "Height must be a positive integer."
+    theta = np.linspace(0, 2 * np.pi, n)
+    z = np.linspace(zc, zc + height, height)
+    x = np.rint([xc + rho * np.cos(theta) for rho in range(radius)]).astype(int).ravel()
+    y = np.rint([yc + rho * np.sin(theta) for rho in range(radius)]).astype(int).ravel()
+    coords = list()
+    for coord in list(set(zip(x, y))):
+        coords += [(*coord, _z) for _z in z]
+    return list(set(coords))
 
 
 def sphere(**kwargs) -> List[Tuple[int, int, int]]:
@@ -127,12 +148,16 @@ def main():
     ax1.scatter(X3, Y3, Z3, marker='.', color='g', alpha=0.1)
 
     # cuboid
-    cuboid1 = cuboid(30, 30, 3, origin=(-15, 10, 0))
+    cuboid1 = cuboid(width=30, depth=30, height=10, origin=(-15, 10, 0))
     X4, Y4, Z4, = unzip(cuboid1)
     ax2.scatter(X4, Y4, Z4, marker='.', color='orange', alpha=0.1)
     torus2 = torus(center=(0, 30, 20), major_radius=15, minor_radius=5)
     X5, Y5, Z5 = unzip(torus2)
     ax2.scatter(X5, Y5, Z5, marker='.', color='grey', alpha=0.1)
+
+    cylinder1 = cylinder(center=(0, 30, 30), radius=15, height=50)
+    X6, Y6, Z6 = unzip(cylinder1)
+    ax1.scatter(X6, Y6, Z6, marker='.', color='royalblue', alpha=0.1)
 
     plt.savefig("geometry.png")
     plt.close()
