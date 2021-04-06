@@ -56,16 +56,13 @@ def sphere(**kwargs) -> List[Tuple[int, int, int]]:
     phi = np.linspace(0, np.pi, n)
     xc, yc, zc = center
     if fill:
-        x = [xc + rho * np.outer(np.cos(theta), np.sin(phi)) for rho in range(radius)]
-        y = [yc + rho * np.outer(np.sin(theta), np.sin(phi)) for rho in range(radius)]
-        z = [zc + rho * np.outer(np.ones(np.size(theta)), np.cos(phi)) for rho in range(radius)]
+        x = np.rint([xc + rho * np.outer(np.cos(theta), np.sin(phi)) for rho in range(radius)]).astype(int).ravel()
+        y = np.rint([yc + rho * np.outer(np.sin(theta), np.sin(phi)) for rho in range(radius)]).astype(int).ravel()
+        z = np.rint([zc + rho * np.outer(np.ones(np.size(theta)), np.cos(phi)) for rho in range(radius)]).astype(int).ravel()
     else:
         x = xc + radius * np.outer(np.cos(theta), np.sin(phi))
         y = yc + radius * np.outer(np.sin(theta), np.sin(phi))
         z = zc + radius * np.outer(np.ones(np.size(theta)), np.cos(phi))
-    x = np.rint(x).astype(int).ravel()
-    y = np.rint(y).astype(int).ravel()
-    z = np.rint(z).astype(int).ravel()
     return list(set(zip(x, y, z)))
 
 
@@ -82,12 +79,10 @@ def torus(**kwargs) -> List[Tuple[int, int, int]]:
     phi = np.linspace(0, 2 * np.pi, n)
     theta, phi = np.meshgrid(theta, phi)
     xc, yc, zc = center
-    x = xc + (major_radius + minor_radius * np.cos(theta)) * np.cos(phi)
-    y = yc + (major_radius + minor_radius * np.cos(theta)) * np.sin(phi)
-    z = zc + minor_radius * np.sin(theta)
-    x = np.rint(x).astype(int).ravel()
-    y = np.rint(y).astype(int).ravel()
-    z = np.rint(z).astype(int).ravel()
+    x = np.rint(xc + (major_radius + minor_radius * np.cos(theta)) * np.cos(phi)).astype(int).ravel()
+    y = np.rint(yc + (major_radius + minor_radius * np.cos(theta)) * np.sin(phi)).astype(int).ravel()
+    z = np.rint(zc + minor_radius * np.sin(theta)).astype(int).ravel()
+
     return list(set(zip(x, y, z)))
 
 
