@@ -7,6 +7,7 @@ from library.common.utils import Level, InputOutput
 
 
 @Pyro4.expose
+@Pyro4.behavior(instance_mode="single")
 class ISimulator(ABC):
     """
     The base class of each simulator
@@ -37,6 +38,13 @@ class ISimulator(ABC):
         self._remove = set(_remove)
         self._add = set(_add)
         self._name = name
+
+    @classmethod
+    def serve(cls, host="127.0.0.1", port=9090, ns=False, verbose=True):
+        Pyro4.Daemon.serveSimple({
+            cls: cls.__name__,
+        }, host=host, port=port, ns=ns, verbose=verbose)
+        print(f"{cls.__name__} execution terminated.")
 
     @property
     def models(self):
@@ -81,7 +89,7 @@ class ISimulator(ABC):
             from library.common.pipeline import Pipeline
             return Pipeline(self, other)
         else:
-            raise TypeError("The second arg is not a {} object".format(ISimulator))
+            raise TypeError("The second arg is not a {} or {} object".format(ISimulator, Proxy))
 
 
     @abstractmethod
