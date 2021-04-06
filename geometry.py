@@ -7,6 +7,7 @@ from library.common.utils import AdvEnum
 
 # discretization points for theta and phi
 n = 100
+fill = True
 
 
 class Shape(AdvEnum):
@@ -23,8 +24,12 @@ def shape(**kwargs):
         return eval(sh.lower() + '(**kwargs[sh])')
 
 
-def sphere(center: Tuple[int, int, int] = (0, 0, 0), radius: int = 1, fill: bool = True, n=100) -> List[
-    Tuple[int, int, int]]:
+def sphere(**kwargs) -> List[Tuple[int, int, int]]:
+    params = ["center", "radius"]
+    # check if kwargs contains all elements in params
+    assert all(elem in kwargs.keys() for elem in params)
+    center = tuple(kwargs["center"])
+    radius = kwargs["radius"]
     assert radius > 0, "Radius must be a positive integer."
     theta = np.linspace(0, 2 * np.pi, n)
     phi = np.linspace(0, np.pi, n)
