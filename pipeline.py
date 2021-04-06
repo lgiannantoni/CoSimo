@@ -56,7 +56,7 @@ class Pipeline:
         elif isinstance(other, Pipeline):
             other = other._pipe
         else:
-            raise TypeError("The pipeline can accept only {} object".format(ISimulator))
+            raise TypeError("The pipeline can accept only {} and {} objects".format(ISimulator, Proxy))
 
         for module in other:
             l_pipe = len(self._pipe)
@@ -65,7 +65,7 @@ class Pipeline:
                     self._pipe.append(module)
                     self._output |= set(module.input_list)
                 else:
-                    tmp = module.input_list - self._output
+                    tmp = set(module.input_list) - self._output
                     if len(tmp) != 0:
                         raise TypeError(
                             "The output of module {} is not compatible with the input of module {}".format(l_pipe - 1,
