@@ -41,10 +41,19 @@ class ISimulator(ABC):
 
     @classmethod
     def serve(cls, host="127.0.0.1", port=9090, ns=False, verbose=True):
-        Pyro4.Daemon.serveSimple({
-            cls: cls.__name__,
-        }, host=host, port=port, ns=ns, verbose=verbose)
+        cls.daemon = Pyro4.Daemon(host=host, port=port)  # custom daemon to control shutdown
+        Pyro4.Daemon.serveSimple(
+            {
+                cls: cls.__name__
+            },
+            daemon=cls.daemon, ns=ns, verbose=verbose)
         print(f"{cls.__name__} execution terminated.")
+
+    @Pyro4.expose
+    def close(self):
+        Pyro4.Daemon.close(self.__class__.daemon)
+        self.__class__.daemon = None
+        print(f"{self.__class__.__name__} daemon shut down.")
 
     @property
     def models(self):
@@ -91,7 +100,6 @@ class ISimulator(ABC):
         else:
             raise TypeError("The second arg is not a {} or {} object".format(ISimulator, Proxy))
 
-
     @abstractmethod
     def add_model(self, *args, **kwargs):
         raise NotImplementedError
@@ -102,6 +110,7 @@ class ISimulator(ABC):
         pass
 
     @abstractmethod
+    @Pyro4.expose
     def step(self, *args, **kwargs) -> (tuple, dict):
         """Abstract method that will be called by the pipeline
                 Parameters
@@ -127,7 +136,7 @@ class ISimulator(ABC):
 
     def draw(self, name=None, path="."):
         pass
-        #raise NotImplementedError
+        # raise NotImplementedError
 
     def draw_model(self, name=None, path=None):
         if len(self.models) > 0:
