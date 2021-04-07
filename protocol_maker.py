@@ -1,3 +1,4 @@
+import importlib
 import re
 import signal
 from abc import ABC, abstractmethod
@@ -20,10 +21,15 @@ class ProtocolMaker(ABC):
         for sim_name, sim_params in sim_config.items():
             print(sim_name)
             try:
-                sim_path, sim_class = sim_params['python'].split(':')
+                sim_mod, sim_class = sim_params['python'].split(':')
             except:
                 raise Exception("blablabla")
-            if "remote" in sim_params.keys():
+            if not "remote" in sim_params.keys():
+                # launch local
+                mod = importlib.import_module(sim_mod)
+                mcls = getattr(mod, sim_class)
+                cls.sims[sim_class] = mcls()
+            else:
                 #user, host = sim_params['remote'].split('@')
                 user, host, port = re.split(r'[@:]', sim_params['remote'])
                 # try:
@@ -32,24 +38,22 @@ class ProtocolMaker(ABC):
                 print("qua")
                 # launch remote
                 #cmd = f"screen -dmS prova bash -c 'cd ~/coherence; source venv/bin/activate; python3 < {'/'.join(sim_path.split('.'))}.py - {host} {port} 2>/dev/null >/dev/null; exec bash' &"
-                cmd = f"screen -dmS {sim_name} bash -c 'cd ~/coherence; source venv/bin/activate; python3 < {'/'.join(sim_path.split('.'))}.py - {host} {port}; exec bash' &"
+                #TODO aggiungere il path dei simulatori ai path degli eseguibili python;
+                #TODO o meglio: fare script per lanciare questa roba e aggiungerli al path
+                #TODO salvare conn dentro la classe Proxy per usi futuri (es. terminare screen)?
+                cmd = f"screen -dmS {sim_name} bash -c 'cd ~/coherence; source venv/bin/activate; python3 < {'/'.join(sim_mod.split('.'))}.py - {host} {port}; exec bash' &"
                 print(f"cmd {cmd}")
                 try:
                     #result = Connection(host, user=user).run(f"cd ~/coherence; source venv/bin/activate; python3 < {'/'.join(sim_path.split('.'))}.py 2> /dev/null > /dev/null &")
                     conn = Connection(host, user=user) #.run(cmd)
-                    #conn.run("screen -Sdm DIO")
                     result = conn.run(cmd)
-                    print("aaaaaaaaaaaaaaa {}: {}".format(host, result.stdout.strip()))
+                    #print("{}: {}".format(host, result.stdout.strip()))
                     sleep(3) # necessario per aspettare l'avvio del server. migliorare. n.b. il try su Proxy(...) non va: perché?
                 except Exception as e:
-                    print("dioboia")
                     raise e
                 p = Proxy(f"PYRO:{sim_class}@{host}:{port}")
 
                 cls.sims[sim_class] = p
-            else:
-                # launch local
-                cls.sims[sim_class] = Tester2()
         for sim_name, sim in cls.sims.items():
             print(type(sim))
             cls._simulation_pipeline += sim
@@ -58,10 +62,8 @@ class ProtocolMaker(ABC):
         cls._simulation_pipeline.do(**kwargs)
         for sim in cls._simulation_pipeline._pipe:
             if type(sim) == Proxy:
-                print("eeeeeeeee")
                 sim.close()
         #cls.sims["Tester1"].close()
-        print("sssssssssssssss")
 
     @classmethod
     @abstractmethod
