@@ -72,6 +72,14 @@ class ISimulator(ABC):
         self._input = set(value)
 
     @property
+    def output_list(self) -> set:
+        return set(self._output)
+
+    @output_list.setter
+    def output_list(self, value):
+        self._output = set(value)
+
+    @property
     def remove_list(self) -> set:
         return set(self._remove)
 
