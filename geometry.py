@@ -23,7 +23,7 @@ class Shape(Objectless):
             if not sh.title() in inner_classes:
                 raise Exception(f"Shape {sh} unknown. Available shapes: {inner_classes}")
             kwargs[sh] = {k.lower(): v for k, v in kwargs[sh].items()}
-            ret += eval("Shape." + sh.title() + '(**kwargs[sh])')
+            ret += eval(f"Shape.{sh.title()}(**kwargs[sh])")
         return ret
 
     class Cuboid:
@@ -31,7 +31,7 @@ class Shape(Objectless):
             # x_width: int, y_depth: int, z_height: int, origin: Tuple[int, int, int] = (0, 0, 0), fill: bool = True
             params = ["width", "depth", "height", "origin"]
             # check if kwargs contains all elements in params
-            assert all(elem in kwargs.keys() for elem in params)
+            assert all(elem in kwargs.keys() for elem in params), f"Missing parameters {params}."
             width = kwargs["width"]
             depth = kwargs["depth"]
             height = kwargs["height"]
@@ -51,7 +51,7 @@ class Shape(Objectless):
         def __new__(cls, **kwargs):
             params = ["center", "radius", "height"]
             # check if kwargs contains all elements in params
-            assert all(elem in kwargs.keys() for elem in params)
+            assert all(elem in kwargs.keys() for elem in params), f"Missing parameters {params}."
             center = tuple(kwargs["center"])
             xc, yc, zc = center
             radius = kwargs["radius"]
@@ -71,7 +71,7 @@ class Shape(Objectless):
         def __new__(cls, **kwargs):
             params = ["center", "radius"]
             # check if kwargs contains all elements in params
-            assert all(elem in kwargs.keys() for elem in params)
+            assert all(elem in kwargs.keys() for elem in params), f"Missing parameters {params}."
             center = tuple(kwargs["center"])
             radius = kwargs["radius"]
             assert radius > 0, "Radius must be a positive integer."
@@ -94,7 +94,7 @@ class Shape(Objectless):
             # center: Tuple[int, int, int] = (0, 0, 0), major_radius: int = 3, minor_radius: int = 2, n=100
             params = ["center", "major_radius", "minor_radius"]
             # check if kwargs contains all elements in params
-            assert all(elem in kwargs.keys() for elem in params)
+            assert all(elem in kwargs.keys() for elem in params), f"Missing parameters {params}."
             center = tuple(kwargs["center"])
             major_radius = kwargs["major_radius"]
             minor_radius = kwargs["minor_radius"]
@@ -161,8 +161,22 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
-    kwargs = {"CUBOID": {"WIDTH": 40, "DEPTH": 40, "HEIGHT": 3, "ORIGIN": [0, 0, 0]},
-              "SPHERE": {"CENTER": (0, 0, 0), "RADIUS": 1}}
+    #main()
+    kwargs = {"CUBOID": {"width": 40, "DEPTH": 40, "HEIGHT": 15, "ORIGIN": (0, 0, 0)},
+              "SPHERE": {"CENTER": (60, 60, 60), "RADIUS": 20},
+              "cylinder": {"center": (30,-75,-30), "radius": 15, "height": 20},
+              "torus": {"center": (-70, -70, 50), "major_radius": 30, "minor_radius": 10}}
 
-    print(Shape.make_shapes(**kwargs))
+    res = Shape.make_shapes(**kwargs)
+    x, y, z = unzip(res)
+
+    import matplotlib.pyplot as plt
+    fig = plt.figure()
+    # plt.gca().set_aspect('equal', adjustable='box')
+    ax = fig.add_subplot(111, projection='3d')
+    ax.set_xlim(-100, 100)
+    ax.set_ylim(-100, 100)
+    ax.set_zlim(-100, 100)
+    ax.scatter(x, y, z, marker='.', color='grey', alpha=0.1)
+    plt.savefig("geometry2.png")
+    plt.close()
