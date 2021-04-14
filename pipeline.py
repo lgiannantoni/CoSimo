@@ -37,7 +37,7 @@ class Pipeline:
         """
         Pipeline.debug_path = Path("./_debug_output")
         self._pipe = []
-        self._output = set()
+        self._output = list()
         self.level = Level.NOTSET
         for module in args:
             self.__add__(module)
@@ -63,9 +63,9 @@ class Pipeline:
             if isinstance(module, ISimulator) or isinstance(module, Proxy):
                 if l_pipe == 0:
                     self._pipe.append(module)
-                    self._output |= set(module.input_list)
+                    self._output = list(set(self._output) | set(module.input_list))
                 else:
-                    tmp = set(module.input_list) - self._output
+                    tmp = list(set(module.input_list) - set(self._output))
                     if len(tmp) != 0:
                         raise TypeError(
                             "The output of module {} is not compatible with the input of module {}".format(l_pipe - 1,
@@ -76,7 +76,7 @@ class Pipeline:
                 for el in module.remove_list:
                     self._output.remove(el)
 
-                self._output |= set(module.add_list)
+                self._output = list(set(self._output) | set(module.add_list))
 
             else:
                 raise TypeError("The pipeline can accept only {} or {} objects".format(ISimulator, Proxy))
@@ -111,7 +111,7 @@ class Pipeline:
                 logging.debug("Debug folder found.")
 
         logging.debug(f"Starting simulation pipeline.")
-        start_time = time.time()
+        #start_time = time.time()
         for _ in range(int(kwargs[InputOutput.CONFIG.name]["SIM_STEPS"])):
             for module in self._pipe:
                 #logging.debug(f"Start: {str(module)}")
