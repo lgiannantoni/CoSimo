@@ -34,13 +34,13 @@ class ISimulator(ABC):
 
     def __init__(self, _in: list, _remove: list, _add: list, name: str = ""):
         self._models = defaultdict()
-        self._input = set(_in)
-        self._remove = set(_remove)
-        self._add = set(_add)
+        self._input = list(set(_in))
+        self._remove = list(set(_remove))
+        self._add = list(set(_add))
         self._name = name
 
     @classmethod
-    def serve(cls, host="127.0.0.1", port=9090, ns=False, verbose=True):
+    def serve(cls, host="127.0.0.1", port=9090, ns=False, verbose=False):
         cls.daemon = Pyro4.Daemon(host=host, port=port)  # custom daemon to control shutdown
         Pyro4.Daemon.serveSimple(
             {
@@ -64,36 +64,28 @@ class ISimulator(ABC):
         self._models = value
 
     @property
-    def input_list(self) -> set:
-        return set(self._input)
+    def input_list(self) -> list:
+        return self._input
 
     @input_list.setter
     def input_list(self, value):
-        self._input = set(value)
+        self._input = list(set(value))
 
     @property
-    def output_list(self) -> set:
-        return set(self._output)
-
-    @output_list.setter
-    def output_list(self, value):
-        self._output = set(value)
-
-    @property
-    def remove_list(self) -> set:
-        return set(self._remove)
+    def remove_list(self) -> list:
+        return self._remove
 
     @remove_list.setter
     def remove_list(self, value):
-        self._remove: set = value
+        self._remove = list(set(value))
 
     @property
-    def add_list(self) -> set:
-        return set(self._add)
+    def add_list(self) -> list:
+        return self._add
 
     @add_list.setter
     def add_list(self, value):
-        self._add: set = value
+        self._add = list(set(value))
 
     def __add__(self, other):
         """To build the pipeline dynamically
@@ -159,10 +151,6 @@ class Proxy(Pyro4.Proxy):
 
     def __init__(self, uri):
         super().__init__(uri)
-        # self.models = defaultdict()
-        # self.input_list = set()
-        # self.remove_list = set()
-        # self.add_list = set()
 
     def __add__(self, other):
         """To build the pipeline dynamically
