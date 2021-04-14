@@ -1,9 +1,15 @@
 import logging
 import random
+import sys
 from collections import defaultdict
 from enum import Enum
-from uuid import uuid4
 from weakref import WeakKeyDictionary
+from uuid import uuid4
+
+import Pyro4
+from Pyro4.util import SerializerBase
+
+Pyro4.config.SERIALIZER = "serpent"
 
 
 class UniqueIdMap(WeakKeyDictionary):
@@ -23,12 +29,22 @@ class Singleton(type):
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
+
 class Objectless:
     def __new__(cls, *args, **kwargs):
         raise RuntimeError('%s should not be instantiated' % cls)
 
 
+# python black magic FTW
 class AdvEnum(Enum):
+    # NEEDED, WTF
+    SerializerBase.unregister_class_to_dict(Enum)
+
+    def __init__(self, *args, **kwargs):
+        logging.debug(f"Registering serialization and deserialization hooks for class {self.__class__.__name__}")
+        SerializerBase.register_class_to_dict(self.__class__, AdvEnum.__class_to_dict__)
+        SerializerBase.register_dict_to_class(self.__class__.__name__, AdvEnum.__dict_to_class__)
+
     @classmethod
     def list(cls):
         return list(map(lambda c: c.value, cls))
@@ -44,6 +60,41 @@ class AdvEnum(Enum):
     @classmethod
     def random(cls):
         return random.choice(list(cls))
+
+    def __eq__(self, other):
+        if isinstance(other, str):
+            return self.name == other
+        else:
+            return super.__eq__(self, other)
+
+    def __hash__(self):
+        return super().__hash__()
+
+    def __repr__(self):
+        return f"<'Enum' {self.__class__.__name__}.{self.name}: {self.value}>"
+
+    # serialization hook
+    @staticmethod
+    def __class_to_dict__(obj):
+        print(f"----serializer hook, converting to dict: {obj.__repr__()}")
+        d = {
+            '__class__': obj.__class__.__name__,
+            'name-attribute': obj.name,  # str(obj)
+            'value-attribute': obj.value
+        }
+        return d
+
+    # deserialization hook
+    @staticmethod
+    def __dict_to_class__(classname, d):
+        print(f"----deserializer hook, converting {d} to class: {classname}")
+        value = d["value-attribute"]
+        name = d["name-attribute"]
+        clazz = d["__class__"]
+        # if not clazz in custom_enums:
+        #    raise Exception(f"{clazz} not in custom_enums {custom_enums}")
+        # print(getattr(eval(clazz), name), type(getattr(eval(clazz), name)))
+        return getattr(eval(clazz), name)  # return eval(name)
 
 
 class Level(AdvEnum):
@@ -66,13 +117,5 @@ class InputOutput(AdvEnum):
     LIFECYCLE_CONFIG = 8
     LIFECYCLE_EVENTS = 9
     PROTOCOL = 10
-
-
-    def __eq__(self, other):
-        if isinstance(other, str):
-            return self.name == other
-        else:
-            return super.__eq__(self, other)
-
-    def __hash__(self):
-        return super().__hash__()
+    META = -42
+    SIM_STEPS = -666
