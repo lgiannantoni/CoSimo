@@ -1,5 +1,5 @@
 import inspect
-from typing import Tuple, List
+from typing import Tuple, List, Dict, Union
 
 import numpy as np
 
@@ -8,6 +8,7 @@ from library.common.utils import Objectless
 # discretization points for theta and phi
 n = 100
 fill = True
+
 
 class Shape(Objectless):
 
@@ -20,10 +21,11 @@ class Shape(Objectless):
         ret = list()
         for sh in kwargs.keys():
             inner_classes = cls.inner_classes_list()
-            if not sh.title() in inner_classes:
-                raise Exception(f"Shape {sh} unknown. Available shapes: {inner_classes}")
+            sh_name = sh.split(' ')[0].title()
+            if not sh_name in inner_classes:
+                raise Exception(f"Shape {sh_name} unknown. Available shapes: {inner_classes}")
             kwargs[sh] = {k.lower(): v for k, v in kwargs[sh].items()}
-            ret += eval(f"Shape.{sh.title()}(**kwargs[sh])")
+            ret += eval(f"Shape.{sh_name.title()}(**kwargs[sh])")
         return ret
 
     class Cuboid:
@@ -79,9 +81,12 @@ class Shape(Objectless):
             phi = np.linspace(0, np.pi, n)
             xc, yc, zc = center
             if fill:
-                x = np.rint([xc + rho * np.outer(np.cos(theta), np.sin(phi)) for rho in range(radius)]).astype(int).ravel()
-                y = np.rint([yc + rho * np.outer(np.sin(theta), np.sin(phi)) for rho in range(radius)]).astype(int).ravel()
-                z = np.rint([zc + rho * np.outer(np.ones(np.size(theta)), np.cos(phi)) for rho in range(radius)]).astype(
+                x = np.rint([xc + rho * np.outer(np.cos(theta), np.sin(phi)) for rho in range(radius)]).astype(
+                    int).ravel()
+                y = np.rint([yc + rho * np.outer(np.sin(theta), np.sin(phi)) for rho in range(radius)]).astype(
+                    int).ravel()
+                z = np.rint(
+                    [zc + rho * np.outer(np.ones(np.size(theta)), np.cos(phi)) for rho in range(radius)]).astype(
                     int).ravel()
             else:
                 x = xc + radius * np.outer(np.cos(theta), np.sin(phi))
@@ -110,8 +115,78 @@ class Shape(Objectless):
             return list(set(zip(x, y, z)))
 
 
+
+def get_mask(template: Union[Dict, Tuple[int, int, int]], mask: Union[Dict, List[Tuple[int, int, int]]]):
+    assert isinstance(template, tuple), NotImplementedError("'template' parameter must be the tuple of integers (x_width, y_depth, z_height).")
+    assert all([type(_i) == int for _i in template])
+    if isinstance(mask, dict):
+        ls = Shape.make_shapes(**mask)
+        ls = crop_coords(ls, template)
+        d2 = {_k: 1 for _k in ls}
+    else:
+        d2 = {_k: 1 for _k in mask}
+    x, y, z = template
+    d1: Dict[Tuple[int, int, int], int] = dict()
+    [d1.update({(i, j, k): 0}) for i in range(x) for j in range(y) for k in range(z)]
+    return d1 | d2
+
+
+def crop_coords(coords: List[Tuple[int, int, int]], margins: Tuple[int, int, int]):
+    return [_t for _t in coords if all((a < b) for a, b in zip(_t, margins))]
+
+
 def unzip(coord: List[Tuple[int, int, int]]):
     return map(list, zip(*coord))
+
+def draw(coord: Dict[Tuple[int, int, int], int], fig_name="shape.png", margins: Tuple[int, int, int]=None):
+    import seaborn as sns
+    sns.set_style("ticks", {"xtick.major.size": 4, "ytick.major.size": 4, "ztick.major.size": 4})
+    from matplotlib import pyplot as plt
+    import pandas as pd
+
+    fig = plt.figure()
+    ax1 = fig.add_subplot(121, projection='3d')
+    ax1.view_init(56, 66)
+    ax2 = fig.add_subplot(122, projection='3d')
+    ax2.view_init(0, 0)
+
+    K = list(coord.keys())
+    V = list(coord.values())
+    (X, Y, Z) = zip(*K)
+    data = pd.DataFrame({"X Value": X, "Y Value": Y, "Z Value": Z, "Category": V})
+    groups = data.groupby("Category")
+    for name, group in groups:
+        if name == 1:
+            ax1.scatter(group["X Value"], group["Y Value"], group["Z Value"], marker=".", label='target')
+            ax2.scatter(group["X Value"], group["Y Value"], group["Z Value"], marker=".", label='target')
+    #ax1.scatter(data["X Value"], data["Y Value"], data["Z Value"], marker='o', label="diocane")
+    #ax2.scatter(data["X Value"], data["Y Value"], data["Z Value"], marker='o', label="diocane")
+
+    # plt.legend(bbox_to_anchor=(1.05, 1), loc=2)
+    plt.legend(loc="lower center", bbox_to_anchor=(0.5, -0.3))
+    ax1.set_xlabel('X')
+    ax1.set_ylabel('Y')
+    ax1.set_zlabel('Z')
+    ax2.set_xlabel('X')
+    ax2.set_ylabel('Y')
+    ax2.set_zlabel('Z')
+    if margins:
+        #plt.xlim(0, margins[0]+1)
+        #plt.ylim(0, margins[1]+1)
+        ax1.set_xlim(0, margins[0] + 1)
+        ax2.set_xlim(0, margins[0] + 1)
+        ax1.set_ylim(0, margins[1] + 1)
+        ax2.set_ylim(0, margins[1] + 1)
+        ax1.set_zlim(0, margins[2] + 1)
+        ax2.set_zlim(0, margins[2] + 1)
+    ax1.set_xticks([])
+    ax1.set_yticks([])
+    ax1.set_zticks([])
+    ax2.set_xticks([])
+    ax2.set_yticks([])
+    ax2.set_zticks([])
+    plt.savefig(fig_name)
+    plt.close()
 
 
 def main():
@@ -160,17 +235,18 @@ def main():
     plt.close()
 
 
-if __name__ == "__main__":
-    #main()
+def prova_shape():
+    # main()
     kwargs = {"CUBOID": {"width": 40, "DEPTH": 40, "HEIGHT": 15, "ORIGIN": (0, 0, 0)},
               "SPHERE": {"CENTER": (60, 60, 60), "RADIUS": 20},
-              "cylinder": {"center": (30,-75,-30), "radius": 15, "height": 20},
+              "cylinder": {"center": (30, -75, -30), "radius": 15, "height": 20},
               "torus": {"center": (-70, -70, 50), "major_radius": 30, "minor_radius": 10}}
 
     res = Shape.make_shapes(**kwargs)
     x, y, z = unzip(res)
 
     import matplotlib.pyplot as plt
+
     fig = plt.figure()
     # plt.gca().set_aspect('equal', adjustable='box')
     ax = fig.add_subplot(111, projection='3d')
@@ -180,3 +256,24 @@ if __name__ == "__main__":
     ax.scatter(x, y, z, marker='.', color='grey', alpha=0.1)
     plt.savefig("geometry2.png")
     plt.close()
+
+def prova_target():
+    target1 = {#"CUBOID": {"width": 50, "DEPTH": 60, "HEIGHT": 60, "ORIGIN": (3, 3, 3)},
+              "cylinder": {"center": (30, 45, 20), "radius": 15, "height": 20},
+              "SPHERE": {"CENTER": (20, 20, 20), "RADIUS": 10},
+             }
+    #sh = Shape.make_shapes(**mask)
+    margins = (100,100,100)
+    mask1 = get_mask(margins, target1)
+    draw(mask1, fig_name="target_shape_1.png", margins=margins)
+
+    target2 = {
+        "CUBOID 1": {"width": 20, "DEPTH": 80, "HEIGHT": 1, "ORIGIN": (10, 10, 10)},
+        "CUBOID 2": {"width": 20, "DEPTH": 80, "HEIGHT": 1, "ORIGIN": (40, 10, 10)},
+        "CUBOID 3": {"width": 20, "DEPTH": 80, "HEIGHT": 1, "ORIGIN": (70, 10, 10)}
+    }
+    mask2 = get_mask(margins, target2)
+    draw(mask2, fig_name="target_shape_2.png", margins=margins)
+
+if __name__ == "__main__":
+    prova_target()
