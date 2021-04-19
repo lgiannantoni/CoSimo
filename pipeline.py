@@ -133,10 +133,9 @@ class Pipeline:
                         self.shutdown()
                         return
                     #logging.debug(f"End in: {(time.time() - start_time):.2f} sec")
-            else:
-                self.shutdown()
 
         logging.info(f"End pipeline in: {str(datetime.timedelta(seconds=(time.time() - start_pipeline)))}")
+        self.shutdown()
 
         return args, kwargs
 
