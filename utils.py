@@ -41,7 +41,7 @@ class AdvEnum(Enum):
     SerializerBase.unregister_class_to_dict(Enum)
 
     def __init__(self, *args, **kwargs):
-        logging.debug(f"Registering serialization and deserialization hooks for class {self.__class__.__name__}")
+        #logging.debug(f"Registering serialization and deserialization hooks for class {self.__class__.__name__}")
         SerializerBase.register_class_to_dict(self.__class__, AdvEnum.__class_to_dict__)
         SerializerBase.register_dict_to_class(self.__class__.__name__, AdvEnum.__dict_to_class__)
 
@@ -76,7 +76,7 @@ class AdvEnum(Enum):
     # serialization hook
     @staticmethod
     def __class_to_dict__(obj):
-        print(f"----serializer hook, converting to dict: {obj.__repr__()}")
+        #print(f"----serializer hook, converting to dict: {obj.__repr__()}")
         d = {
             '__class__': obj.__class__.__name__,
             'name-attribute': obj.name,  # str(obj)
@@ -87,7 +87,7 @@ class AdvEnum(Enum):
     # deserialization hook
     @staticmethod
     def __dict_to_class__(classname, d):
-        print(f"----deserializer hook, converting {d} to class: {classname}")
+        #print(f"----deserializer hook, converting {d} to class: {classname}")
         value = d["value-attribute"]
         name = d["name-attribute"]
         clazz = d["__class__"]
