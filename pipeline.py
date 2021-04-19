@@ -7,6 +7,8 @@ from pathlib import Path
 from library.common.simulator import ISimulator, Proxy
 from library.common.utils import Level, InputOutput
 
+from Pyro4.util import getPyroTraceback
+
 
 class Pipeline:
     """
@@ -38,6 +40,7 @@ class Pipeline:
         Pipeline.debug_path = Path("./_debug_output")
         self._pipe = []
         self._output = list()
+        self._stop = False
         self.level = Level.NOTSET
         for module in args:
             self.__add__(module)
@@ -95,7 +98,7 @@ class Pipeline:
         kwargs: dict
             dict of params that will passed to the first Module
         """
-        logging.debug(f"Start pipeline.")
+        logging.info(f"Start pipeline.")
         start_pipeline = time.time()
         if self.level == Level.DEBUG and InputOutput.PATH.name in kwargs.keys():
             Pipeline.debug_path = Path(kwargs[InputOutput.PATH.name]) / "_debug_output"
@@ -110,22 +113,30 @@ class Pipeline:
             else:
                 logging.debug("Debug folder found.")
 
-        logging.debug(f"Starting simulation pipeline.")
+        logging.info(f"Starting simulation pipeline.")
         #start_time = time.time()
         for _ in range(int(kwargs[InputOutput.CONFIG.name]["SIM_STEPS"])):
-            for module in self._pipe:
-                #logging.debug(f"Start: {str(module)}")
-                #start_time = time.time()
-                if args is None:
-                    args = ()
-                if kwargs is None:
-                    kwargs = {}
+            if not self.stop:
+                for module in self._pipe:
+                    #logging.debug(f"Start: {str(module)}")
+                    #start_time = time.time()
+                    if args is None:
+                        args = ()
+                    if kwargs is None:
+                        kwargs = {}
+                    kwargs[InputOutput.DEBUG.name] = self.level
+                    try:
+                        args, kwargs = module.step(*args, **kwargs)
+                    except Exception as e:
+                        logging.error(f"In pipeline.py: {e}.")
+                        logging.error("".join(getPyroTraceback()))
+                        self.shutdown()
+                        return
+                    #logging.debug(f"End in: {(time.time() - start_time):.2f} sec")
+            else:
+                self.shutdown()
 
-                kwargs[InputOutput.DEBUG.name] = self.level
-                args, kwargs = module.step(*args, **kwargs)
-                #logging.debug(f"End in: {(time.time() - start_time):.2f} sec")
-
-        logging.debug(f"End pipeline in: {str(datetime.timedelta(seconds=(time.time() - start_pipeline)))}")
+        logging.info(f"End pipeline in: {str(datetime.timedelta(seconds=(time.time() - start_pipeline)))}")
 
         return args, kwargs
 
@@ -137,6 +148,21 @@ class Pipeline:
             The level selected for logging ( Default= NOTSET )
         """
         self.level = level
+
+    @property
+    def stop(self) -> bool:
+        return self._stop
+
+    @stop.setter
+    def stop(self, val: bool = True):
+        self._stop = True
+
+    def shutdown(self):
+        for module in self._pipe:
+            if type(module) == Proxy:
+                logging.info(f"Shutting down remote simulator {module}")
+                # https://pyro4.readthedocs.io/en/stable/clientcode.html#proxies-connections-threads-and-cleaning-up
+                module.shutdown()
 
     def __str__(self):
         return "Pipeline(%s)" % ",".join([str(i) for i in self._pipe])
