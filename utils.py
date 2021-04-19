@@ -108,6 +108,7 @@ class InputOutput(AdvEnum):
     NONE = -2
     ALL = -1
     PATH = 0
+    DEBUG_PATH = 42
     CONFIG = 1
     DIGEST = 2
     PLACING = 3
