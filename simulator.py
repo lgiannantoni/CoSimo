@@ -164,3 +164,8 @@ class Proxy(Pyro4.Proxy):
             return Pipeline(self, other)
         else:
             raise TypeError("The second arg is not a {} or {} object".format(ISimulator, Proxy))
+
+    def shutdown(self):
+        print(f"Shutting down remote simulator {self}")
+        self._pyroRelease()
+        self.close()
