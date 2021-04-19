@@ -41,7 +41,7 @@ class Pipeline:
         self._pipe = []
         self._output = list()
         self._stop = False
-        self.level = Level.NOTSET
+        self.level = Level.DEBUG
         for module in args:
             self.__add__(module)
 
@@ -125,6 +125,7 @@ class Pipeline:
                     if kwargs is None:
                         kwargs = {}
                     kwargs[InputOutput.DEBUG.name] = self.level
+                    kwargs[InputOutput.DEBUG_PATH.name] = str(os.path.abspath(Pipeline.debug_path))
                     try:
                         args, kwargs = module.step(*args, **kwargs)
                     except Exception as e:
