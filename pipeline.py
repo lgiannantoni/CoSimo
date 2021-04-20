@@ -125,7 +125,7 @@ class Pipeline:
                     if kwargs is None:
                         kwargs = {}
                     kwargs[InputOutput.DEBUG.name] = self.level
-                    kwargs[InputOutput.DEBUG_PATH.name] = str(os.path.abspath(Pipeline.debug_path))
+                    kwargs[InputOutput.DEBUG_PATH.name] = str(Pipeline.debug_path)
                     try:
                         args, kwargs = module.step(*args, **kwargs)
                     except Exception as e:
@@ -136,7 +136,6 @@ class Pipeline:
                     #logging.debug(f"End in: {(time.time() - start_time):.2f} sec")
 
         logging.info(f"End pipeline in: {str(datetime.timedelta(seconds=(time.time() - start_pipeline)))}")
-        self.shutdown()
 
         return args, kwargs
 
@@ -158,11 +157,11 @@ class Pipeline:
         self._stop = True
 
     def shutdown(self):
+        logging.info("Shutting down pipeline.")
         for module in self._pipe:
             if type(module) == Proxy:
-                logging.info(f"Shutting down remote simulator {module}")
-                # https://pyro4.readthedocs.io/en/stable/clientcode.html#proxies-connections-threads-and-cleaning-up
-                module.shutdown()
+                #module.shutdown()
+                module.close()
 
     def __str__(self):
         return "Pipeline(%s)" % ",".join([str(i) for i in self._pipe])
