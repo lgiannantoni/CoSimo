@@ -1,7 +1,10 @@
+import logging
 from abc import ABC, abstractmethod
 from collections import defaultdict
+from time import sleep
 
 import Pyro4
+from fabric import Connection
 
 from library.common.utils import Level, InputOutput
 
@@ -51,9 +54,14 @@ class ISimulator(ABC):
 
     @Pyro4.expose
     def close(self):
+        logging.info(f"Shutting down remote simulator {self.__class__.__name__}")
         Pyro4.Daemon.close(self.__class__.daemon)
         self.__class__.daemon = None
         print(f"{self.__class__.__name__} daemon shut down.")
+
+        # https://pyro4.readthedocs.io/en/stable/clientcode.html#proxies-connections-threads-and-cleaning-up
+        # self._pyroRelease()
+        # self.close()
 
     @property
     def models(self):
@@ -149,8 +157,26 @@ class Proxy(Pyro4.Proxy):
     """
     level = Level.NOTSET
 
-    def __init__(self, uri):
-        super().__init__(uri)
+    def __init__(self, *args, **kwargs):
+        # try:
+        #     self._pyroReconnect(tries=100)
+        # except:
+        user = kwargs['user']
+        host = kwargs['host']
+        port = kwargs['port']
+        sim_class = kwargs['sim_class']
+        sim_mod = kwargs['sim_module']
+        sim_name = kwargs['sim_name'] if kwargs['sim_name'] else sim_class
+        # launch remote
+        # cmd = f"screen -dmS prova bash -c 'cd ~/coherence; source venv/bin/activate; python3 < {'/'.join(sim_path.split('.'))}.py - {host} {port} 2>/dev/null >/dev/null; exec bash' &"
+        # TODO aggiungere il path dei simulatori ai path degli eseguibili python;
+        # TODO o meglio: fare script per lanciare questa roba e aggiungerli al path
+        # TODO salvare conn dentro la classe Proxy per usi futuri (es. terminare screen)?
+        cmd = f"screen -dmS {sim_name} bash -c 'cd ~/coherence; source venv3.9/bin/activate; python3 < {'/'.join(sim_mod.split('.'))}.py - {host} {port}; exec bash' &"
+        conn = Connection(host, user=user)  # .run(cmd)
+        result = conn.run(cmd)
+        sleep(10)  # necessario per aspettare l'avvio del server. migliorare. n.b. il try su Proxy(...) non va: perché?
+        super().__init__(uri=f"PYRO:{sim_class}@{host}:{port}")
 
     def __add__(self, other):
         """To build the pipeline dynamically
@@ -165,7 +191,13 @@ class Proxy(Pyro4.Proxy):
         else:
             raise TypeError("The second arg is not a {} or {} object".format(ISimulator, Proxy))
 
-    def shutdown(self):
-        print(f"Shutting down remote simulator {self}")
+    # def shutdown(self):
+    #     logging.info(f"Shutting down remote simulator {self}")
+    #     # https://pyro4.readthedocs.io/en/stable/clientcode.html#proxies-connections-threads-and-cleaning-up
+    #     self._pyroRelease()
+    #     self.close()
+
+    def __del__(self):
+        logging.info(f"Shutting down remote simulator {self}")
         self._pyroRelease()
         self.close()
