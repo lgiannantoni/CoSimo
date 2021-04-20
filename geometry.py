@@ -116,7 +116,7 @@ class Shape(Objectless):
 
 
 
-def get_mask(template: Union[Dict, Tuple[int, int, int]], mask: Union[Dict, List[Tuple[int, int, int]]]):
+def get_mask(template: Union[Dict, Tuple[int, int, int]], mask: Union[Dict, List[Tuple[int, int, int]]]) -> Dict[Tuple[int, int, int], int]:
     assert isinstance(template, tuple), NotImplementedError("'template' parameter must be the tuple of integers (x_width, y_depth, z_height).")
     assert all([type(_i) == int for _i in template])
     if isinstance(mask, dict):
