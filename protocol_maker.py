@@ -8,80 +8,13 @@ from time import sleep
 from fabric import Connection
 
 from library.common.pipeline import Pipeline
+from library.common.simulation import Simulation
 from library.common.simulator import Proxy
 from library.common.utils import InputOutput, AdvEnum
 from library.space.simple_grid import GridObjectType, SimpleGridOpt
 
-class SimConfig(AdvEnum):
-    STEPS = 0
-    SHUTDOWN = 1
-    SIMS = 2
 
-class SimType(AdvEnum):
-    PYTHON = 3
-    CMD = 4
-    REMOTE_CMD = 5
-    CONNECT = 6
-
-
-class Simulation(ABC):
-    _pipeline: Pipeline
-    _steps: int
-    _shutdown: bool
-
-    def __init__(self, **kwargs):
-        #params = [InputOutput.PATH.name, InputOutput.SIM_STEPS.name, InputOutput.META.name, InputOutput.CONFIG.name, "SHUTDOWN_REMOTE"]
-        # check if kwargs contains all elements in params
-        assert all(elem in kwargs.keys() for elem in SimConfig.names()), f"Missing parameters {SimConfig.names()}."
-        assert type(eval(kwargs[SimConfig.STEPS.name])) == int and int(kwargs[SimConfig.STEPS.name]) >= 0, f"Paramter {SimConfig.STEPS.name} must be a non-negative integer."
-        assert type(eval(kwargs[SimConfig.SHUTDOWN.name])) == bool, f"Parameter {SimConfig.SHUTDOWN.name} must be either 'True' or 'False'."
-        self._steps = int(kwargs[InputOutput.STEPS.name])
-        self._shutdown = bool(kwargs[SimConfig.SHUTDOWN.name])
-        logging.debug(f"Building simulation pipeline.")
-        sims = self._init_sims(**kwargs[SimConfig.SIMS.name])
-        self._pipeline = Pipeline(sim for sim in sims) #TODO passare path
-        logging.debug(f"Simulation pipeline built.")
-
-    def run(self):
-        pass
-
-    @staticmethod
-    def _init_sims(**kwargs):
-        for sim_name, sim_params in kwargs.items():
-            logging.debug(f"Reading configuration parameters for simulator {sim_name}.")
-            assert all([k in SimType.names() for k in sim_params.keys]), f"Allowed simulator types are {SimType.names()}"
-            try:
-                sim_mod, sim_class = sim_params['python'].split(':')
-            except:
-                raise Exception("blablabla")
-            if not "remote" in sim_params.keys():
-                # launch local
-                mod = importlib.import_module(sim_mod)
-                mcls = getattr(mod, sim_class)
-                cls.sims[sim_class] = mcls()
-            else:
-                user, host, port = re.split(r'[@:]', sim_params['remote'])
-                # launch remote
-                # cmd = f"screen -dmS prova bash -c 'cd ~/coherence; source venv/bin/activate; python3 < {'/'.join(sim_path.split('.'))}.py - {host} {port} 2>/dev/null >/dev/null; exec bash' &"
-                # TODO aggiungere il path dei simulatori ai path degli eseguibili python;
-                # TODO o meglio: fare script per lanciare questa roba e aggiungerli al path
-                # TODO salvare conn dentro la classe Proxy per usi futuri (es. terminare screen)?
-                cmd = f"screen -dmS {sim_name} bash -c 'cd ~/coherence; source venv3.9/bin/activate; python3 < {'/'.join(sim_mod.split('.'))}.py - {host} {port}; exec bash' &"
-                print(f"cmd {cmd}")
-                try:
-                    # result = Connection(host, user=user).run(f"cd ~/coherence; source venv/bin/activate; python3 < {'/'.join(sim_path.split('.'))}.py 2> /dev/null > /dev/null &")
-                    conn = Connection(host, user=user)  # .run(cmd)
-                    result = conn.run(cmd)
-                    # print("{}: {}".format(host, result.stdout.strip()))
-                    sleep(10)  # necessario per aspettare l'avvio del server. migliorare. n.b. il try su Proxy(...) non va: perché?
-                except Exception as e:
-                    raise e
-                p = Proxy(f"PYRO:{sim_class}@{host}:{port}")
-
-                cls.sims[sim_class] = p
-        return []
-
-class ProtocolMaker(ABC):
+class ProtocolMaker_(ABC):
     _simulation_pipeline = Pipeline()
     sims = None
 
@@ -164,6 +97,11 @@ class ProtocolMaker(ABC):
     def eval_protocol(protocol: str):
         raise NotImplementedError
 
+    @classmethod
+    @abstractmethod
+    def collect_data(cls, *args, **kwargs):
+        pass
+
 
 #    @classmethod
 #    def make(cls):
@@ -171,7 +109,7 @@ class ProtocolMaker(ABC):
 #        cls.eval_protocol("abstract")
 
 
-class Prova(ProtocolMaker):
+class Prova(Simulation):
     # def make_protocol(cls, *args, **kwargs):
     #     super().make_protocol(args, kwargs)
     #     pass
@@ -184,6 +122,14 @@ class Prova(ProtocolMaker):
     @staticmethod
     def eval_protocol(protocol: str):
         print(protocol)
+
+    @classmethod
+    def collect_data(cls, *args, **kwargs):
+        res = dict()
+        for sim in cls._simulation_pipeline._pipe:
+            print(sim)
+            res[sim] = sim.data()
+        return res
 
 
 def prova():
@@ -272,7 +218,7 @@ def simple_grid_config2():
                #     ['x<50, y<50, z<3', "ECM", {'STIFF': True}],
                #     ['x<10, y<10, z>17', "CELL"]
                # ],
-               SimpleGridOpt.GRID_DRAW_INTERVAL.name: 0
+               SimpleGridOpt.GRID_DRAW_INTERVAL.name: 5
            }
     return config
 
@@ -281,7 +227,7 @@ def prova_seria():
     logging.basicConfig(level=logging.DEBUG)
     logging.getLogger('matplotlib').setLevel(logging.ERROR)
 
-    path = Path("./experiments/test")
+    path = Path("../../experiments/test")
 
     kwargs = dict()
     kwargs[InputOutput.PATH.name] = str(path)
@@ -289,7 +235,8 @@ def prova_seria():
     #kwargs[InputOutput.CONFIG.name][InputOutput.GRID_CONFIG.name] = simple_grid_config()
     kwargs[InputOutput.CONFIG.name][InputOutput.GRID_CONFIG.name] = simple_grid_config2()
     kwargs[InputOutput.CONFIG.name][InputOutput.LIFECYCLE_CONFIG.name] = lifecycle_config()
-    kwargs[InputOutput.CONFIG.name][InputOutput.SIM_STEPS.name] = 1000
+    kwargs[InputOutput.CONFIG.name][InputOutput.SIM_STEPS.name] = 10
+    kwargs[InputOutput.PROTOCOL.name] = {}
     kwargs[InputOutput.META.name] = {
         'SimpleGrid': {
             'python': 'library.space.simple_grid:GridSimulator',
@@ -300,6 +247,10 @@ def prova_seria():
             'python': 'library.lifecycle.models.bool_lifecycle:LifecycleSimulator',
             'remote': 'leonardo@actarus.polito.it:9666'
         },
+        'Collector': {
+            'python': 'library.data_collector.collector:Collector',
+            #'remote': 'leonardo@actarus.polito.it:6666'
+        }
     }
 
     return kwargs
@@ -310,11 +261,11 @@ if __name__ == "__main__":
     #SIM_CONFIG = prova()
     SIM_CONFIG = prova_seria()
     print(SIM_CONFIG)
-    Prova.simulation_setup(SIM_CONFIG["META"])
+    Prova(**SIM_CONFIG["META"], shutdown=True)
     try:
-        Prova.simulation_start(SIM_CONFIG)
+        Prova.start(**SIM_CONFIG)
     except Exception as e:
         logging.debug(e)
-        #Prova.simulation_shutdown()
-    finally:
-        Prova.simulation_shutdown()
+        #Prova.shutdown()
+    # finally:
+    #     Prova.shutdown()
