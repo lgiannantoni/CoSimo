@@ -24,7 +24,7 @@ class SimType(AdvEnum):
 class Simulation(ABC):
     _simulation_pipeline = None
     _meta_config = None
-    _shutdown = True
+    _shutdown = False
 
     def __new__(cls, *args, **kwargs):
         cls.setup(*args, **kwargs)
@@ -72,10 +72,10 @@ class Simulation(ABC):
             cls._simulation_pipeline.do(**kwargs)
         except Exception as e:
             logging.error(e)
-            cls.shutdown()
-        finally:
-            if cls._shutdown:
-                cls.shutdown()
+        #     cls.shutdown()
+        # finally:
+        #     if cls._shutdown:
+        #         cls.shutdown()
         print("Simulation finished.")
 
     @classmethod
@@ -86,7 +86,7 @@ class Simulation(ABC):
     #TODO fatti furbo
     @classmethod
     def reset(cls):
-        cls.setup()
+        cls._simulation_pipeline.reset()
 
     @classmethod
     @abstractmethod
