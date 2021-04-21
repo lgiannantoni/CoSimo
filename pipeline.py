@@ -139,6 +139,10 @@ class Pipeline:
 
         return args, kwargs
 
+    def reset(self):
+        for sim in self._pipe:
+            sim.reset()
+
     def set_level(self, level: Level):
         """Sets the level of log
         Parameters
