@@ -117,6 +117,7 @@ class InputOutput(AdvEnum):
     GRID_EVENTS = 7
     LIFECYCLE_CONFIG = 8
     LIFECYCLE_EVENTS = 9
+    DEMIURGOS_EVENTS = -77
     PROTOCOL = 10
     META = -42
     SIM_STEPS = -666
