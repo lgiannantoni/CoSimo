@@ -63,6 +63,11 @@ class ISimulator(ABC):
         # self._pyroRelease()
         # self.close()
 
+    @Pyro4.expose
+    @abstractmethod
+    def reset(self):
+        raise NotImplementedError
+
     @property
     def models(self):
         return self._models
@@ -94,6 +99,10 @@ class ISimulator(ABC):
     @add_list.setter
     def add_list(self, value):
         self._add = list(set(value))
+
+    @property
+    def name(self) -> str:
+        return self._name
 
     def __add__(self, other):
         """To build the pipeline dynamically
@@ -172,7 +181,7 @@ class Proxy(Pyro4.Proxy):
         # TODO aggiungere il path dei simulatori ai path degli eseguibili python;
         # TODO o meglio: fare script per lanciare questa roba e aggiungerli al path
         # TODO salvare conn dentro la classe Proxy per usi futuri (es. terminare screen)?
-        cmd = f"screen -dmS {sim_name} bash -c 'cd ~/coherence; source venv3.9/bin/activate; python3 < {'/'.join(sim_mod.split('.'))}.py - {host} {port}; exec bash' &"
+        cmd = f"screen -admS {sim_name} bash -c 'cd ~/coherence; source venv3.9/bin/activate; python3 < {'/'.join(sim_mod.split('.'))}.py - {host} {port}; exec bash' &"
         conn = Connection(host, user=user)  # .run(cmd)
         result = conn.run(cmd)
         sleep(10)  # necessario per aspettare l'avvio del server. migliorare. n.b. il try su Proxy(...) non va: perché?
