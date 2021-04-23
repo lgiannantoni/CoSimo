@@ -129,7 +129,7 @@ class Pipeline:
                     try:
                         args, kwargs = module.step(*args, **kwargs)
                     except Exception as e:
-                        logging.error(f"In pipeline.py: {e}.")
+                        logging.error(f"In pipeline: module {module}: {e}.")
                         logging.error("".join(getPyroTraceback()))
                         self.shutdown()
                         return
