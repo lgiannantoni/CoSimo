@@ -116,7 +116,10 @@ class Pipeline:
         logging.info(f"Starting simulation pipeline.")
         #start_time = time.time()
         for _ in range(int(kwargs[InputOutput.CONFIG.name]["SIM_STEPS"])):
-            if not self.stop:
+            if InputOutput.STOP_SIMULATION.name in kwargs or self.stop:
+                logging.debug(f"In pipeline: stopping simulation (STOP_SIMULATION: {kwargs[InputOutput.STOP_SIMULATION.name]}, self.stop: {self.stop})")
+
+            else:
                 for module in self._pipe:
                     #logging.debug(f"Start: {str(module)}")
                     #start_time = time.time()
