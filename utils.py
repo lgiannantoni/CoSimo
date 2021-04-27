@@ -124,3 +124,4 @@ class InputOutput(AdvEnum):
     PROTOCOL = 10
     META = -42
     SIM_STEPS = -666
+    STOP_SIMULATION = 999
