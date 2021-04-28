@@ -44,9 +44,9 @@ class Shape(Objectless):
             yvalues = range(yo, yo + depth)
             zvalues = range(zo, zo + height)
             x, y, z = np.meshgrid(xvalues, yvalues, zvalues, indexing='ij')
-            x = x.ravel()
-            y = y.ravel()
-            z = z.ravel()
+            x = [int(_x) for _x in x.ravel()]
+            y = [int(_y) for _y in y.ravel()]
+            z = [int(_z) for _z in z.ravel()]
             return list(set(zip(x, y, z)))
 
     class Cylinder:
@@ -61,9 +61,9 @@ class Shape(Objectless):
             height = kwargs["height"]
             assert height > 0, "Height must be a positive integer."
             theta = np.linspace(0, 2 * np.pi, n)
-            z = np.linspace(zc, zc + height, height)
-            x = np.rint([xc + rho * np.cos(theta) for rho in range(radius)]).astype(int).ravel()
-            y = np.rint([yc + rho * np.sin(theta) for rho in range(radius)]).astype(int).ravel()
+            z = [int(_z) for _z in np.linspace(zc, zc + height, height)]
+            x = [int(_x) for _x in np.rint([xc + rho * np.cos(theta) for rho in range(radius)]).astype(int).ravel()]
+            y = [int(_y) for _y in np.rint([yc + rho * np.sin(theta) for rho in range(radius)]).astype(int).ravel()]
             coords = list()
             for coord in list(set(zip(x, y))):
                 coords += [(*coord, _z) for _z in z]
@@ -81,17 +81,19 @@ class Shape(Objectless):
             phi = np.linspace(0, np.pi, n)
             xc, yc, zc = center
             if fill:
-                x = np.rint([xc + rho * np.outer(np.cos(theta), np.sin(phi)) for rho in range(radius)]).astype(
-                    int).ravel()
-                y = np.rint([yc + rho * np.outer(np.sin(theta), np.sin(phi)) for rho in range(radius)]).astype(
-                    int).ravel()
-                z = np.rint(
-                    [zc + rho * np.outer(np.ones(np.size(theta)), np.cos(phi)) for rho in range(radius)]).astype(
-                    int).ravel()
+                x = [int(_x) for _x in
+                     np.rint([xc + rho * np.outer(np.cos(theta), np.sin(phi))
+                              for rho in range(radius)]).astype(int).ravel()]
+                y = [int(_y) for _y in
+                     np.rint([yc + rho * np.outer(np.sin(theta), np.sin(phi))
+                              for rho in range(radius)]).astype(int).ravel()]
+                z = [int(_z) for _z in
+                     np.rint([zc + rho * np.outer(np.ones(np.size(theta)), np.cos(phi))
+                              for rho in range(radius)]).astype(int).ravel()]
             else:
-                x = xc + radius * np.outer(np.cos(theta), np.sin(phi))
-                y = yc + radius * np.outer(np.sin(theta), np.sin(phi))
-                z = zc + radius * np.outer(np.ones(np.size(theta)), np.cos(phi))
+                x = [int(_x) for _x in xc + radius * np.outer(np.cos(theta), np.sin(phi))]
+                y = [int(_y) for _y in yc + radius * np.outer(np.sin(theta), np.sin(phi))]
+                z = [int(_z) for _z in zc + radius * np.outer(np.ones(np.size(theta)), np.cos(phi))]
             return list(set(zip(x, y, z)))
 
     class Torus:
@@ -108,9 +110,9 @@ class Shape(Objectless):
             phi = np.linspace(0, 2 * np.pi, n)
             theta, phi = np.meshgrid(theta, phi)
             xc, yc, zc = center
-            x = np.rint(xc + (major_radius + minor_radius * np.cos(theta)) * np.cos(phi)).astype(int).ravel()
-            y = np.rint(yc + (major_radius + minor_radius * np.cos(theta)) * np.sin(phi)).astype(int).ravel()
-            z = np.rint(zc + minor_radius * np.sin(theta)).astype(int).ravel()
+            x = [int(_x) for _x in np.rint(xc + (major_radius + minor_radius * np.cos(theta)) * np.cos(phi)).astype(int).ravel()]
+            y = [int(_y) for _y in np.rint(yc + (major_radius + minor_radius * np.cos(theta)) * np.sin(phi)).astype(int).ravel()]
+            z = [int(_z) for _z in np.rint(zc + minor_radius * np.sin(theta)).astype(int).ravel()]
 
             return list(set(zip(x, y, z)))
 
