@@ -116,6 +116,29 @@ class Shape(Objectless):
 
             return list(set(zip(x, y, z)))
 
+    class Cardioid:
+        def __new__(cls, **kwargs):
+            params = ["center", "height", "alpha"]
+            # check if kwargs contains all elements in params
+            assert all(elem in kwargs.keys() for elem in params), f"Missing parameters {params}."
+            center = tuple(kwargs["center"])
+            height = int(kwargs["height"])
+            alpha = kwargs["alpha"]
+            assert height > 0, "Height must be greater than 0."
+            assert alpha > 0, "Alpha must be greater than 0."
+            theta = np.linspace(0, 2 * np.pi, n)
+            phi = np.linspace(0, np.pi, n)
+            theta, phi = np.meshgrid(theta, phi)
+            xc, yc, zc = center
+            #np.outer(np.cos(theta), np.sin(phi)
+            # era 16 dove adesso è 8
+            x = [int(_x)
+                 for _x in xc + alpha * 2.5 * (16 * np.power(np.sin(theta) * np.sin(phi), 3)).ravel()]
+            # era 13 dove adesso è 3
+            y = [int(_y)
+                 for _y in yc + alpha * 0.5 * (15 * (np.cos(theta) - 5 * np.cos(2*theta) - 2 * np.cos(3*theta) - np.cos(4*theta)) * -np.sin(phi)).ravel()]
+            z = [center[2] for _x in range(len(x)) for _ in range(height)]
+            return list(set(zip(x, y, z)))
 
 
 def get_mask(template: Union[Dict, Tuple[int, int, int]], mask: Union[Dict, List[Tuple[int, int, int]]]) -> Dict[Tuple[int, int, int], int]:
@@ -148,7 +171,7 @@ def draw(coord: Dict[Tuple[int, int, int], int], fig_name="shape.png", margins: 
 
     fig = plt.figure()
     ax1 = fig.add_subplot(121, projection='3d')
-    ax1.view_init(56, 66)
+    ax1.view_init(90, 90)
     ax2 = fig.add_subplot(122, projection='3d')
     ax2.view_init(0, 0)
 
@@ -163,7 +186,10 @@ def draw(coord: Dict[Tuple[int, int, int], int], fig_name="shape.png", margins: 
             ax2.scatter(group["X Value"], group["Y Value"], group["Z Value"], marker=".", label='target')
     #ax1.scatter(data["X Value"], data["Y Value"], data["Z Value"], marker='o', label="diocane")
     #ax2.scatter(data["X Value"], data["Y Value"], data["Z Value"], marker='o', label="diocane")
-
+    ax1.scatter(0, 0, 0, marker='o', color='red', label='(0,0,0)')
+    ax2.scatter(0, 0, 0, marker='o', color='red', label='(0,0,0)')
+    ax1.scatter(margins[0], margins[1], 0, marker='o', color='green', label=f'({margins[0]},{margins[1]},0)')
+    ax2.scatter(margins[0], margins[1], 0, marker='o', color='green', label=f'({margins[0]},{margins[1]},0)')
     # plt.legend(bbox_to_anchor=(1.05, 1), loc=2)
     plt.legend(loc="lower center", bbox_to_anchor=(0.5, -0.3))
     ax1.set_xlabel('X')
@@ -260,22 +286,44 @@ def prova_shape():
     plt.close()
 
 def prova_target():
-    target1 = {#"CUBOID": {"width": 50, "DEPTH": 60, "HEIGHT": 60, "ORIGIN": (3, 3, 3)},
-              "cylinder": {"center": (30, 45, 20), "radius": 15, "height": 20},
-              "SPHERE": {"CENTER": (20, 20, 20), "RADIUS": 10},
-             }
+    # margins = (300, 300, 100)
+    # target1 = {#"CUBOID": {"width": 50, "DEPTH": 60, "HEIGHT": 60, "ORIGIN": (3, 3, 3)},
+    #           "cylinder": {"center": (30, 45, 20), "radius": 15, "height": 20},
+    #           "SPHERE": {"CENTER": (20, 20, 20), "RADIUS": 10},
+    #          }
     #sh = Shape.make_shapes(**mask)
-    margins = (100,100,100)
-    mask1 = get_mask(margins, target1)
-    draw(mask1, fig_name="target_shape_1.png", margins=margins)
 
-    target2 = {
-        "CUBOID 1": {"width": 20, "DEPTH": 80, "HEIGHT": 1, "ORIGIN": (10, 10, 10)},
-        "CUBOID 2": {"width": 20, "DEPTH": 80, "HEIGHT": 1, "ORIGIN": (40, 10, 10)},
-        "CUBOID 3": {"width": 20, "DEPTH": 80, "HEIGHT": 1, "ORIGIN": (70, 10, 10)}
+    # mask1 = get_mask(margins, target1)
+    # draw(mask1, fig_name="target_shape_1.png", margins=margins)
+    #
+    # target2 = {
+    #     "CUBOID 1": {"width": 20, "DEPTH": 80, "HEIGHT": 1, "ORIGIN": (10, 10, 10)},
+    #     "CUBOID 2": {"width": 20, "DEPTH": 80, "HEIGHT": 1, "ORIGIN": (40, 10, 10)},
+    #     "CUBOID 3": {"width": 20, "DEPTH": 80, "HEIGHT": 1, "ORIGIN": (70, 10, 10)}
+    # }
+    # mask2 = get_mask(margins, target2)
+    # draw(mask2, fig_name="target_shape_2.png", margins=margins)
+
+    # target3 = {
+    #     "CARDIOID": {"center": (50, 50, 0), "height": 5, "alpha": 3}
+    # }
+    # mask3 = get_mask(margins, target3)
+    # draw(mask3, fig_name="target_shape_3.png", margins=margins)
+
+    margins = (200, 200, 200)
+    targets = {
+    # "GOPNIK": {"CUBOID 1": {"width": 200, "DEPTH": 25, "HEIGHT": 1, "ORIGIN": (0, 0, 3)},
+    #           "CUBOID 2": {"width": 200, "DEPTH": 25, "HEIGHT": 1, "ORIGIN": (0, 87, 3)},
+    #           "CUBOID 3": {"width": 200, "DEPTH": 25, "HEIGHT": 1, "ORIGIN": (0, 174, 3)}},
+    # "CIRC": {"CYLINDER": {"center": (100, 100, 3), "radius": 30, "height": 1}},
+    # "LARGER_CIRC": {"CYLINDER": {"center": (100, 100, 3), "radius": 60, "height": 1}},
+    "HALF_N_HALF" : {"CUBOID": {"width": 200, "DEPTH": 100, "HEIGHT": 1, "ORIGIN": (0, 0, 3)}},
+    # "LOGO": {"CARDIOID": {"center": (100, 100, 3), "height": 1, "alpha": 1.5}}
     }
-    mask2 = get_mask(margins, target2)
-    draw(mask2, fig_name="target_shape_2.png", margins=margins)
+    for name, descr in targets.items():
+        _mask = get_mask(margins, descr)
+        draw(_mask, fig_name=f"{name}_target.png", margins=margins)
+
 
 if __name__ == "__main__":
     prova_target()
