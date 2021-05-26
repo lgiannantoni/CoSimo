@@ -22,7 +22,7 @@ class SimType(AdvEnum):
 
 
 class Simulation(ABC):
-    _simulation_pipeline = None
+    _simulation_pipeline: Pipeline = None
     _meta_config = None
     _shutdown = False
 
