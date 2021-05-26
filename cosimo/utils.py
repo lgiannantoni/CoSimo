@@ -20,21 +20,6 @@ class UniqueIdMap(WeakKeyDictionary):
         if dict is not None:
             self.update(dict)
 
-
-class Singleton(type):
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
-
-
-class Objectless:
-    def __new__(cls, *args, **kwargs):
-        raise RuntimeError('%s should not be instantiated' % cls)
-
-
 # python black magic FTW
 class AdvEnum(Enum):
     # NEEDED, WTF
