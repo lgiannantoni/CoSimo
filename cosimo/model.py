@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from library.common.utils import UniqueIdMap
+from cosimo.utils import UniqueIdMap
 
 
 class IModel(ABC):

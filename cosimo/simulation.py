@@ -3,9 +3,9 @@ import logging
 import re
 from abc import ABC, abstractmethod
 
-from library.common.pipeline import Pipeline
-from library.common.simulator import Proxy
-from library.common.utils import AdvEnum
+from cosimo.pipeline import Pipeline
+from cosimo.simulator import Proxy
+from cosimo.utils import AdvEnum
 
 
 # class SimConfig(AdvEnum):

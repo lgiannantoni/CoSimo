@@ -5,8 +5,8 @@ import time
 from pathlib import Path
 from typing import List, Union
 
-from library.common.simulator import ISimulator, Proxy
-from library.common.utils import Level, InputOutput
+from cosimo.simulator import ISimulator, Proxy
+from cosimo.utils import Level, InputOutput
 
 from Pyro4.util import getPyroTraceback
 
