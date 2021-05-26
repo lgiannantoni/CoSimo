@@ -6,7 +6,7 @@ from time import sleep
 import Pyro4
 from fabric import Connection
 
-from cosimo.utils import Level
+from cosimo.utils import Level, InputOutput
 
 
 @Pyro4.expose
