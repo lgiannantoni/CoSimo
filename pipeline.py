@@ -3,6 +3,7 @@ import logging
 import os
 import time
 from pathlib import Path
+from typing import List, Union
 
 from library.common.simulator import ISimulator, Proxy
 from library.common.utils import Level, InputOutput
@@ -38,7 +39,7 @@ class Pipeline:
             list of Modules
         """
         Pipeline.debug_path = Path("./_debug_output")
-        self._pipe = []
+        self._pipe: List[ISimulator, Proxy] = []
         self._output = list()
         self._stop = False
         self.level = Level.DEBUG
