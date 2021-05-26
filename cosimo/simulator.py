@@ -6,7 +6,7 @@ from time import sleep
 import Pyro4
 from fabric import Connection
 
-from cosimo.utils import Level, InputOutput
+from cosimo.utils import Level, IO
 
 
 @Pyro4.expose
@@ -137,8 +137,8 @@ class ISimulator(ABC):
                 kwargs: dict
                     dict of params that will passed by the simulator
                 """
-        if InputOutput.DEBUG.name in kwargs.keys():
-            self.level = kwargs[InputOutput.DEBUG.name]
+        if IO.DEBUG.name in kwargs.keys():
+            self.level = kwargs[IO.DEBUG.name]
         pass
 
     def __repr__(self):

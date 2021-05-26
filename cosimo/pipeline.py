@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import List, Union
 
 from cosimo.simulator import ISimulator, Proxy
-from cosimo.utils import Level, InputOutput
+from cosimo.utils import Level, IO
 
 from Pyro4.util import getPyroTraceback
 
@@ -101,8 +101,8 @@ class Pipeline:
         """
         logging.info(f"Start pipeline.")
         start_pipeline = time.time()
-        if self.level == Level.DEBUG and InputOutput.PATH.name in kwargs.keys():
-            Pipeline.debug_path = Path(kwargs[InputOutput.PATH.name]) / "_debug_output"
+        if self.level == Level.DEBUG and IO.PATH.name in kwargs.keys():
+            Pipeline.debug_path = Path(kwargs[IO.PATH.name]) / "_debug_output"
             if not Pipeline.debug_path.exists():
                 logging.debug("Debug folder not found. Creating folder.")
                 try:
@@ -116,9 +116,9 @@ class Pipeline:
 
         logging.info(f"Starting simulation pipeline.")
         #start_time = time.time()
-        for _ in range(int(kwargs[InputOutput.CONFIG.name]["SIM_STEPS"])):
-            if InputOutput.STOP_SIMULATION.name in kwargs or self.stop:
-                logging.debug(f"In pipeline: stopping simulation (STOP_SIMULATION: {kwargs[InputOutput.STOP_SIMULATION.name]}, self.stop: {self.stop})")
+        for _ in range(int(kwargs[IO.CONFIG.name]["SIM_STEPS"])):
+            if IO.STOP_SIMULATION.name in kwargs or self.stop:
+                logging.debug(f"In pipeline: stopping simulation (STOP_SIMULATION: {kwargs[IO.STOP_SIMULATION.name]}, self.stop: {self.stop})")
 
             else:
                 for module in self._pipe:
@@ -128,8 +128,8 @@ class Pipeline:
                         args = ()
                     if kwargs is None:
                         kwargs = {}
-                    kwargs[InputOutput.DEBUG.name] = self.level
-                    kwargs[InputOutput.DEBUG_PATH.name] = str(Pipeline.debug_path)
+                    kwargs[IO.DEBUG.name] = self.level
+                    kwargs[IO.DEBUG_PATH.name] = str(Pipeline.debug_path)
                     try:
                         args, kwargs = module.step(*args, **kwargs)
                     except Exception as e:

@@ -103,7 +103,7 @@ class Level(AdvEnum):
     NOTSET = 0
 
 
-class InputOutput(AdvEnum):
+class IO(AdvEnum):
     DEBUG = -8
     NONE = -2
     ALL = -1
