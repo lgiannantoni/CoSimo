@@ -6,7 +6,6 @@ from time import sleep
 import Pyro4
 from fabric import Connection
 
-from cosimo.pipeline import Pipeline
 from cosimo.utils import Level, InputOutput
 
 
@@ -113,6 +112,7 @@ class ISimulator(ABC):
         other : ISimulator
         """
         if isinstance(other, ISimulator):
+            from cosimo.pipeline import Pipeline
             return Pipeline(self, other)
         else:
             raise TypeError("The second arg is not a {} or {} object".format(ISimulator, Proxy))
@@ -195,6 +195,7 @@ class Proxy(Pyro4.Proxy):
         other : ISimulator or Proxy
         """
         if isinstance(other, ISimulator) or isinstance(other, Proxy):
+            from cosimo.pipeline import Pipeline
             return Pipeline(self, other)
         else:
             raise TypeError("The second arg is not a {} or {} object".format(ISimulator, Proxy))
