@@ -39,7 +39,7 @@ class Pipeline:
             list of Modules
         """
         Pipeline.debug_path = Path("./_debug_output")
-        self._pipe: List[ISimulator, Proxy] = []
+        self._pipe: List[Union[ISimulator, Proxy]] = []
         self._output = list()
         self._stop = False
         self.level = Level.DEBUG
