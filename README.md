@@ -274,6 +274,41 @@ Contributions are welcome! Fork the repository, create a feature branch, and sub
 
 ---
 
-## License
-This project is licensed under the MIT License.
+## Author
+Leonardo Giannantoni
+
+Politecnico di Torino - Control and Computer Engineering Department <br/>
+PhD Candidate
+
+   
+**E**:    leonardo.giannantoni@polito.it <br/>
+**P**:    +39 011 090 7191 <br/>
+**M**:    +39 377 283 4499 <br/>
+**A**:    Corso Duca degli Abruzzi 24 10129 Torino Italy <br/>   
+
+## Publications
+1. Leonardo Giannantoni, et al. "[A methodology for co-simulation-based optimization of biofabrication protocols](https://doi.org/10.1101/2022.01.28.478198)". IWBBIO 2022.
+
+The co-simulation methodology presented in this paper is built on top of CoSimo.
+
+## Recommended citation for this project
+
+**APA**
+   
+      Giannantoni, L. (2022). CoSimo (Version 1.0.0) [Computer software]. https://github.com/lgiannantoni/CoSimo
+
+**BibTeX**
+
+      @software{Giannantoni_CoSimo_2022,
+      author = {Giannantoni, Leonardo},
+      month = {1},
+      title = {{cosimo}},
+      url = {https://github.com/lgiannantoni/CoSimo},
+      version = {1.0.0},
+      year = {2022}
+      }
+
+## Copyright
+
+Coherence is licensed under the MIT license. A copy of this license is included in the file LICENSE.
 
