@@ -295,17 +295,17 @@ The co-simulation methodology presented in this paper is built on top of CoSimo.
 
 **APA**
    
-      Giannantoni, L. (2022). CoSimo (Version 1.0.0) [Computer software]. https://github.com/lgiannantoni/CoSimo
+      Giannantoni, L. (2021). CoSimo (Version 1.0.0) [Computer software]. https://github.com/lgiannantoni/CoSimo
 
 **BibTeX**
 
-      @software{Giannantoni_CoSimo_2022,
+      @software{Giannantoni_CoSimo_2021,
       author = {Giannantoni, Leonardo},
       month = {1},
       title = {{cosimo}},
       url = {https://github.com/lgiannantoni/CoSimo},
       version = {1.0.0},
-      year = {2022}
+      year = {2021}
       }
 
 ## Copyright
